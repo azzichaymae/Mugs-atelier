@@ -1,0 +1,25 @@
+
+   
+   .login-section {
+     position: relative;
+     z-index: 1;
+     margin-top: 0; /* Remove any top margin */
+     padding: 80px;
+     padding-left: 0%;
+     padding-right: 0%;
+   }
+   
+   header {
+     position: relative;
+     z-index: 10;
+     margin-bottom: 0; /* Ensure there's no gap below the header */
+   }
+   
+   .container-fluid {
+     padding-top: 0; /* Ensure no padding above the login section */
+   }
+   
+   .mt-5 {
+     margin-top: 0 !important; /* Override any Bootstrap margin if it's adding extra space */
+   }
+   

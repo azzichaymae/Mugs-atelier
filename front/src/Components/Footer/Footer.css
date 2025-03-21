@@ -1,0 +1,143 @@
+/* Footer Styles */
+.footer {
+  background-color: #f0eeec; /* Light nude color */
+  color: #333;
+  padding: 20px 50px;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer-left, .footer-center, .footer-right {
+  flex: 1;
+  margin: 10px;
+}
+
+.footer-logo {
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.footer p {
+  font-size: 14px;
+  color: #888;
+}
+
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.social-links li {
+  margin: 0 10px;
+}
+
+.social-links a {
+  color: #333;
+  font-size: 18px;
+  transition: color 0.3s ease-in-out;
+}
+
+.social-links a:hover {
+  color: #ff7f50; /* Coral color on hover */
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.footer-links li {
+  display: inline;
+  margin: 0 15px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+}
+
+.footer-links a:hover {
+  color: #ff7f50; /* Coral color on hover */
+}
+
+/* Social Icons */
+.social-icons a {
+  color: #333; /* Dark gray for social icons */
+  margin-right: 15px;
+  font-size: 18px;
+  transition: color 0.3s ease-in-out;
+}
+
+.social-icons a:hover {
+  color: #ff7f50; /* Coral color for hover effect */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-left, .footer-center, .footer-right {
+    flex: 1 100%; /* Make each section take full width */
+    margin-bottom: 20px;
+  }
+
+  .footer-logo {
+    max-width: 80px;
+  }
+
+  .footer-links li {
+    display: block;
+    margin: 10px 0;
+  }
+
+  .social-links {
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .social-links li {
+    margin: 0 10px;
+  }
+
+  .footer-links a {
+    font-size: 14px;
+  }
+
+  .social-icons a {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    padding: 20px;
+  }
+
+  .footer p {
+    font-size: 12px;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+  }
+
+  .social-icons a {
+    font-size: 16px;
+  }
+}

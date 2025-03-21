@@ -1,25 +1,245 @@
+@import url(
+"https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
-   
-   .login-section {
-     position: relative;
-     z-index: 1;
-     margin-top: 0; /* Remove any top margin */
-     padding: 80px;
-     padding-left: 0%;
-     padding-right: 0%;
-   }
-   
-   header {
-     position: relative;
-     z-index: 10;
-     margin-bottom: 0; /* Ensure there's no gap below the header */
-   }
-   
-   .container-fluid {
-     padding-top: 0; /* Ensure no padding above the login section */
-   }
-   
-   .mt-5 {
-     margin-top: 0 !important; /* Override any Bootstrap margin if it's adding extra space */
-   }
-   
+.rowDiv{
+  background: linear-gradient(to right,rgba(255, 207, 149, 0.703), #fad0c4a7);
+  
+}
+
+
+
+
+
+
+.container {
+  margin-top: 20px;
+    height: 600px;
+    width: 500px;
+    
+    position: relative;
+    overflow: hidden;
+}
+
+.btn {
+    height: 50px;
+    width: 300px;
+    margin: 20px auto;
+    
+    border-radius: 50px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.login,
+.signup {
+    font-size: 17px ;
+    font-weight: bold;
+    color: white;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    position: relative;
+    cursor: pointer;
+}
+
+.slider {
+    height: 50px;
+    width: 130px;
+    border-radius: 50px;
+    background-image: linear-gradient(to right,
+            rgb(255, 195, 110),
+            rgb(255, 146, 91));
+    position: absolute;
+    top: 20px;
+    left: 110px;
+    transition: all 0.5s ease-in-out;
+}
+
+.moveslider {
+    left: 250px;
+}
+
+.form-section {
+    height: 500px;
+    width: 1000px;
+    /* padding: 20px 0; */
+    display: flex;
+    position: relative;
+    transition: all 0.5s ease-in-out;
+    left: 0px;
+}
+
+.form-section-move {
+    left: -500px;
+}
+
+.login-box,
+.signup-box {
+    height: 100%;
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    padding: 10px 40px;
+}
+
+.login-box {
+    gap: 5px;
+}
+
+.signup-box {
+    gap: 5px;
+}
+
+.ele {
+    height: 45px;
+    width: 400px;
+    outline: none;
+    border: none;
+    color: rgb(77, 77, 77);
+    background-color: rgb(240, 240, 240);
+    
+    padding-left: 30px;
+    font-size: 15px;
+}
+
+.clkbtn {
+    height:  40px;
+    width: 120px;
+    border-radius: 50px;
+    background-image: linear-gradient(to right,
+            rgb(255, 195, 110),
+            rgb(255, 146, 91));
+    font-size: 17px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+/* For Responsiveness of the page */
+
+@media screen and (max-width: 650px) {
+    .container {
+        height: 600px;
+        width: 300px;
+    }
+
+    .title {
+        font-size: 15px;
+    }
+
+    .btn {
+        height: 50px;
+        width: 200px;
+        margin: 20px auto;
+    }
+
+    .login,
+    .signup {
+        font-size: 19px;
+    }
+
+    .slider {
+        height: 50px;
+        width: 90px;
+        left: 55px;
+    }
+
+    .moveslider {
+        left: 145px;
+    }
+
+    .form-section {
+        height: 500px;
+        width: 600px;
+    }
+
+    .form-section-move {
+        left: -300px;
+    }
+
+    .login-box,
+    .signup-box {
+        height: 100%;
+        width: 300px;
+    }
+
+    .ele {
+        height: 50px;
+        width: 250px;
+        font-size: 15px;
+    }
+
+    .clkbtn {
+        height: 40px;
+        width: 100px;
+        font-size: 15px;
+    }
+}
+
+@media screen and (max-width: 320px) {
+    .container {
+        height: 600px;
+        width: 250px;
+    }
+
+    .heading {
+        font-size: 30px;
+    }
+
+    .title {
+        font-size: 10px;
+    }
+
+    .btn {
+        height: 50px;
+        width: 200px;
+        margin: 20px auto;
+    }
+
+    .login,
+    .signup {
+        font-size: 19px;
+    }
+
+    .slider {
+        height: 50px;
+        width: 100px;
+        left: 27px;
+    }
+
+    .moveslider {
+        left: 127px;
+    }
+
+    .form-section {
+        height: 500px;
+        width: 500px;
+    }
+
+    .form-section-move {
+        left: -250px;
+    }
+
+    .login-box,
+    .signup-box {
+        height: 100%;
+        width: 250px;
+    }
+
+    .ele {
+        height: 40px;
+        width: 220px;
+        font-size: 15px;
+    }
+
+    .clkbtn {
+        height: 35px;
+        width: 130px;
+        font-size: 19px;
+    }
+}
+

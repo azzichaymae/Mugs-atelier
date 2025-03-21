@@ -7,6 +7,7 @@ import {
   FaTimes,
   FaShoppingBasket,
   FaUser,
+  FaStore
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
@@ -19,7 +20,6 @@ const Navbar = () => {
     const handleScroll = () => {
       const navbar = document.querySelector(".navbar");
       if (window.scrollY > 50) {
-        
         navbar.style.position="fixed";
       } else {
         navbar.style.position="";
@@ -38,8 +38,9 @@ const Navbar = () => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
         setMenuOpen(false); 
+        document.getElementById("p").style.display="block";
       } else {
-        setMenuOpen(false); 
+        document.getElementById("p").style.display="none";
       }
     };
 
@@ -54,7 +55,7 @@ const Navbar = () => {
           <img className="img-responsive" src="logo.png" alt="Mugs' Atelier" />
           <div className="logo-text">
             <h4>Mugs' Atelier</h4>
-            <p>Unique Mugs for Every Taste</p>
+            <p id="p">Unique Mugs for Every Taste</p>
           </div>
         </div>
         <div className="search-container">
@@ -74,7 +75,7 @@ const Navbar = () => {
           </li>
           <li>
             <NavLink to="/shop" onClick={() => setMenuOpen(false)}>
-              <FaShoppingCart /> Shop
+              <FaStore /> Shop
             </NavLink>
           </li>
           <li>
@@ -84,7 +85,7 @@ const Navbar = () => {
           </li>
           <li>
             <NavLink to="/cart" onClick={() => setMenuOpen(false)}>
-              <FaShoppingBasket /> Cart
+              <FaShoppingCart /> Cart
             </NavLink>
           </li>
         </ul>

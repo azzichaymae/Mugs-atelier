@@ -14,7 +14,8 @@ import "./Navbar.css";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const id = localStorage.getItem("user_id")
+  
   
   useEffect(() => {
     const handleScroll = () => {
@@ -52,7 +53,8 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="logo-container">
-          <img className="img-responsive" src="logo.png" alt="Mugs' Atelier" />
+          <NavLink to="/">          <img className="img-responsive" src="logo.png" alt="Mugs' Atelier" />
+</NavLink>
           <div className="logo-text">
             <h4>Mugs' Atelier</h4>
             <p id="p">Unique Mugs for Every Taste</p>
@@ -79,7 +81,7 @@ const Navbar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/login" onClick={() => setMenuOpen(false)}>
+            <NavLink to={id ? "/account" : "/login"} onClick={() => setMenuOpen(false)}>
               <FaUser /> Account
             </NavLink>
           </li>

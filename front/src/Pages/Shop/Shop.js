@@ -1,33 +1,31 @@
 import React, { useState } from "react";
 import "./Shop.css";
-
-
-const products = [
-     { id: 1, name: "Coffee Mug", price: 10, category: "Classic", image: "/mugCoffee.jpg" },
-     { id: 2, name: "Travel Mug", price: 15, category: "Travel", image: "/mugTravel.jpg" },
-     { id: 3, name: "Funny Mug", price: 12, category: "Funny", image: "/mugFunny.webp" },
-     { id: 4, name: "Office Mug", price: 8, category: "Office", image: "/mugOffice.jpg" },
-  { id: 5, name: "Designer Mug", price: 20, category: "Classic", image: "/mugDesigner.avif" },
-];
-
-const categories = ["All", "Classic", "Travel", "Funny", "Office"];
+import { useContext } from "react";
+import { ProductContext } from "../../context/ProductContext";
 
 const ProductListing = () => {
+  const { products } = useContext(ProductContext);
+  const { categories } = useContext(ProductContext);
+  console.log(products);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [maxPrice, setMaxPrice] = useState(20);
+  const [maxPrice, setMaxPrice] = useState(40);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products
-    .filter((product) => selectedCategory === "All" || product.category === selectedCategory)
+    .filter((product) => {
+      if (selectedCategory === "All") return true;
+      return product.category === selectedCategory || product.name.includes(selectedCategory) ; 
+    })
     .filter((product) => product.price <= maxPrice)
-    .filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
-
+    .filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   return (
     <div className="containerShop">
-      {/* Sidebar */}
+     
       <aside className="filter">
         <h5>Filters</h5>
-        
+
         <input
           type="text"
           placeholder="🔍 Search mugs..."
@@ -36,29 +34,43 @@ const ProductListing = () => {
         />
         <h6>Category</h6>
         <ul>
+          <li
+            key="All"
+            className={selectedCategory === "All" ? "active" : ""}
+            onClick={() => setSelectedCategory("All")}
+          >
+            All
+          </li>
           {categories.map((cat) => (
-            <li key={cat} className={selectedCategory === cat ? "active" : ""}
-                onClick={() => setSelectedCategory(cat)}>
-              {cat}
+            <li
+              key={cat.id}
+              className={selectedCategory === cat.name ? "active" : ""}
+              onClick={() => setSelectedCategory(cat.name)}
+            >
+              {cat.name}
             </li>
           ))}
         </ul>
+
         <h6>Max Price: ${maxPrice}</h6>
         <input
           type="range"
           min="5"
-          max="20"
+          max="40"
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
         />
       </aside>
 
-      {/* Product Grid */}
+      
       <main className="products">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} />
+              <img
+                src={`http://127.0.0.1:8000${product.image}`}
+                alt={product.name}
+              />
               <h4>{product.name}</h4>
               <p>${product.price}</p>
             </div>

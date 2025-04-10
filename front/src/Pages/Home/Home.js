@@ -1,20 +1,19 @@
 import React from "react";
-import './Home.css';
-
+import "./Home.css";
 
 const Home = () => {
   return (
     <>
-     
-      <section className="banner" id="home">
-        <div className="banner-content">
-          <h2>Discover the Best Mugs for Every Occasion</h2>
+      <div class="banner">
+       
+        <div class="banner-content">
+          <h1>Discover the Best Mugs for Every Occasion</h1>
           <p>Handcrafted, personalized mugs that tell your story.</p>
           <a href="/shop" className="btn">
             Shop Now
           </a>
         </div>
-      </section>
+      </div>
 
       <section className="featured-products mt-4" id="shop">
         <h2>Featured Products</h2>
@@ -36,9 +35,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-
-     
     </>
   );
 };

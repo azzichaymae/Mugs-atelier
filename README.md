@@ -1,1 +1,1 @@
-# mugs-atelier-front
+# mugs-atelier-project

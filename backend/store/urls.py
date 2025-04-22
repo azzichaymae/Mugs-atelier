@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     path('', views.product_list),
     path('category', views.category_list),
+    path('product/<int:product_id>/', views.find_product_by_id),
 ]
 
 # Serve media files in development

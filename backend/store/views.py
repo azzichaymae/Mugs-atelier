@@ -29,3 +29,19 @@ def category_list(request):
                'description': category.description,
         })
      return JsonResponse(category_data, safe=False)
+def find_product_by_id(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        product_data = {
+          'id': product.id,
+          'name': product.name,
+          'description': product.description,
+          'price': product.price,
+          'stock': product.stock,  # Add stock information
+          'image': product.image.url if product.image else None,  # Handle case when there's no image
+          'category': product.id_category.name if product.id_category else None,  # ForeignKey to Category model
+
+        }
+        return JsonResponse(product_data)
+    except Product.DoesNotExist:
+        raise Http404("User does not exist")

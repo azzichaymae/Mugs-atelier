@@ -8,9 +8,10 @@ import Shop from "./Pages/Shop/Shop";
 import Cart from "./Pages/Cart/Cart";
 
 import AccountPage from "./Pages/Details/Account";
+import ProductDetails from "./Pages/Shop/ProductDetails";
 
 function App() {
-  
+
   return (
     <div className="App">
       <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
             <Route path="/shop" element={<Shop />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
           </Routes>
         </div>
       </BrowserRouter>

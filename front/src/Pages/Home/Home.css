@@ -32,8 +32,8 @@ a {
 }
 
 .logo-container img {
-  max-width: 100px;
-  height: auto;
+  /* max-width: 100px; */
+  height: 8vh;
 }
 
 .logo h1 {
@@ -69,17 +69,24 @@ a {
 
 
 .banner-content h2 {
-  font-size: 36px;
-  margin-bottom: 10px;
+  font-family: 'Playfair Display', serif; /* Elegant serif font */
+  font-size: 28px; /* Slightly larger font size */
+  font-weight: 500; /* Medium weight */
+  color: #8B6F47; /* Warm taupe to match the button */
+  margin-bottom: 10px; /* Space between headline and subtext */
+  text-transform: uppercase; 
+  letter-spacing: 1px;
 }
 
 .banner-content p {
-  font-size: 18px;
-  margin-bottom: 20px;
+  font-family: 'Lato', sans-serif; /* Clean sans-serif font */
+            font-size: 16px; /* Smaller font size */
+            font-weight: 300; /* Light weight */
+            color: #A68A64;margin-bottom: 14px;
 }
 
-.banner .btn {
-  background-color: #8a5524; /* Coral color */
+/* .banner .btn {
+  background-color: #8a5524; 
   padding: 10px 20px;
   font-size: 16px;
   border-radius: 5px;
@@ -88,11 +95,8 @@ a {
   height:40px ;
 
 
-}
+} */
 
-.banner .btn:hover {
-  background-color: #e86f33;
-}
 
 /* Featured Products Styles */
 .featured-products {

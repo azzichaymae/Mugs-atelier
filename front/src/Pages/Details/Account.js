@@ -1,89 +1,68 @@
-import React from 'react';
-import './AccountPage.css';
-
+import React, { useEffect, useState } from "react";
+import "./AccountPage.css";
+import { useNavigate } from "react-router";
+import Addresses from "./Addresses";
+import Orders from "./Orders";
+import Wishlist from "./Wishlist";
+import Profile from "./Profile";
 const AccountPage = () => {
-	const changeTab = (e) => {
-		const id = e.target.id ;
-		const tabs = document.querySelectorAll('.tab');
-		tabs.forEach((tab) => {
-			tab.classList.remove('active');
-			});
-			const activeTab = document.getElementById(id);
-			activeTab.classList.add('active');
-			};
-			
-	
+  const changeTab = (e) => {
+    const id = e.target.id;
+    const tabs = document.querySelectorAll(".tab");
+    tabs.forEach((tab) => {
+      tab.classList.remove("active");
+    });
+    const activeTab = document.getElementById(id);
+    activeTab.classList.add("active");
+
+    // const tabContents = document.querySelectorAll(".tab-content");
+    // tabContents.forEach((tab) => {
+    //   tab.classList.add('hidden');
+    // });
+    // const activeTabContent = document.getElementById(id + "-content");
+    // activeTabContent.style.display = "block";
+
+    const tabContents = document.querySelectorAll(".tab-content"); // Replace .tab-content with the class name for your tab contents
+
+    tabContents.forEach((tab) => {
+      if (tab.id == id + "-content") {
+        tab.classList.remove("hidden");
+        tab.style.display = "block";
+      } else {
+        tab.classList.add("hidden");
+      }
+    });
+  };
+
   return (
-    
-
-	<div className="account-page">
-	
-    <div className='list-div'>
-	<div className="list-group list-group-horizontal">
-	  <button onClick={changeTab} id='profile' className="tab active">Profile</button>
-	  <button onClick={changeTab} id='orders' className="tab">Orders</button>
-	  <button onClick={changeTab} id='adresse' className="tab">Addresses</button>
-	  <button onClick={changeTab} id='wishlist' className="tab">Wishlist</button>
-	</div>
+    <div className="account-page">
+      <div className="list-div">
+        <div className="list-group list-group-horizontal">
+          <button onClick={changeTab} id="profile" className="tab active">
+            Profile
+          </button>
+          <button onClick={changeTab} id="orders" className="tab">
+            Orders
+          </button>
+          <button onClick={changeTab} id="adresses" className="tab">
+            Addresses
+          </button>
+          <button onClick={changeTab} id="wishlist" className="tab">
+            Wishlist
+          </button>
+        </div>
+      </div>
+     <div className="d-flex justify-content-center align-items-center flex-column">
+      
+        <div className="card card-item ">
+          <Profile />
+          <Addresses />
+          <Orders />
+          <Wishlist />
+        </div>
+      
+     </div>
     </div>
-	
-<div className='card'>
-    <div className="profile-card">
-	  <div className="sidebar">
-	    <div className="avatar"></div>
-	    <button className="change-btn">Change</button>
-	    <p className="name">user</p>
-	    <p className="member-since">Member since April 2023</p>
-	  </div>
-
-	  <div className="profile-info">
-	    <div className="field-group">
-		 <label>First Name</label>
-		 <input className='rounded' type="text" value="" />
-	    </div>
-
-	    <div className="field-group">
-		 <label>Last Name</label>
-		 <input className='rounded' type="text" value="" />
-	    </div>
-
-	    <div className="field-group full-width">
-		 <label>Email</label>
-		 <input className='rounded' type="email" value="" />
-	    </div>
-
-	    <div className="field-group full-width">
-		 <label>Phone Number</label>
-		 <input className='rounded' type="tel" value="" />
-	    </div>
-	   <h6 > <i className="fa fa-lock" aria-hidden="true"></i> Change Password</h6>
-
-	    <div className="field-group full-width">
-		 <label>Current Password</label>
-		 <input className='rounded' type="password" />
-	    </div>
-
-	    <div className="field-group">
-		 <label>New Password</label>
-		 <input className='rounded' type="password" />
-	    </div>
-
-	    <div className="field-group">
-		 <label>Confirm New Password</label>
-		 <input className='rounded' type="password" />
-	    </div>
-	    <div className="field-group full-width btns mb-2">
-		<span>
-	    <button className="btn deconnect-btn text-white ">Deconnexion</button>
-	    <button className="btn save-btn text-white">Save Changes</button></span>
-	    </div>
-	 
-	</div></div>
-</div>
-	
-   </div>
-
-
   );
 };
 

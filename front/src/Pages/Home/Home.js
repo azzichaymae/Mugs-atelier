@@ -7,9 +7,9 @@ const Home = () => {
       <div class="banner">
        
         <div class="banner-content">
-          <h1>Discover the Best Mugs for Every Occasion</h1>
+          <h2>Discover the Best Mugs for Every Occasion</h2>
           <p>Handcrafted, personalized mugs that tell your story.</p>
-          <a href="/shop" className="btn">
+          <a href="/shop" className="btn bg-[#8B6F47] text-white w-40 hover:bg-[#8B6F47]" >
             Shop Now
           </a>
         </div>

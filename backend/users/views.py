@@ -43,3 +43,19 @@ def user_register(request):
         return Response({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def find_user_by_id(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user_data = {
+            'id': user.id,
+            'password': user.password,
+            'email': user.email,
+            'name': user.name,
+            'address' : user.address,
+            'phone_number' : user.phone_number
+
+        }
+        return JsonResponse(user_data)
+    except User.DoesNotExist:
+        raise Http404("User does not exist")

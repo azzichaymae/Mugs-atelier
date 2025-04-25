@@ -12,7 +12,7 @@ const Wishlist = () =>{
     </a>
    </div>
    <div class="space-y-4">
-    <div class="flex items-center justify-between bg-cream-light p-4 rounded-lg shadow-md border border-cream-dark">
+    {/* <div class="flex items-center justify-between bg-cream-light p-4 rounded-lg shadow-md border border-cream-dark">
      <div class="flex items-center">
       <img   class="w-20 h-20 rounded-lg mr-4" height="100" src="https://oaidalleapiprodscus.blob.core.windows.net/private/org-LmQ09WWGIGwOeeA4ArnRw0x5/user-uJPET5fjNenSso8wCETWVNOp/img-B1U4sGt0bw17VayqXuPmuoQz.png?st=2025-04-16T09%3A11%3A48Z&amp;se=2025-04-16T11%3A11%3A48Z&amp;sp=r&amp;sv=2024-08-04&amp;sr=b&amp;rscd=inline&amp;rsct=image/png&amp;skoid=cc612491-d948-4d2e-9821-2683df3719f5&amp;sktid=a48cca56-e6da-484e-a814-9c849652bcb3&amp;skt=2025-04-16T07%3A03%3A00Z&amp;ske=2025-04-17T07%3A03%3A00Z&amp;sks=b&amp;skv=2024-08-04&amp;sig=Q0ixIZX3Jb1uxd58G7OfcRdr3qLP25%2BMQbHkQl0eP2c%3D" width="100"/>
       <div>
@@ -98,7 +98,7 @@ const Wishlist = () =>{
        </span>
       </button>
      </div>
-    </div>
+    </div> */}
    </div>
   </div>
 

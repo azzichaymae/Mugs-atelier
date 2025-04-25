@@ -16,7 +16,7 @@ const Orders = () => {
                         <th class="py-2 px-4 text-left">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                {/* <tbody>
                     <tr class="border-t border-beige-300">
                         <td class="py-2 px-4">ORD-5123</td>
                         <td class="py-2 px-4">15 Mar 2024</td>
@@ -68,7 +68,7 @@ const Orders = () => {
                             </button>
                         </td>
                     </tr>
-                </tbody>
+                </tbody> */}
             </table>
         </div>
     </div>

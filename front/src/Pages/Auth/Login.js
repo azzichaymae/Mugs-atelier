@@ -4,9 +4,18 @@ import "./Login.css";
 const Login = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailRegister, setEmailRegister] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordSignup, setPasswordSignup] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errorLog, setErrorLog] = useState("");
+  const [errorRegister, setErrorRegister] = useState("");
+  const [errorName, setErrorName] = useState("");
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorPassword, setErrorPassword] = useState("");
+  const [errorConfirmPassword, setErrorConfirmPassword] = useState("");
+  const [errorEmailSignup, setErrorEmailSignup] = useState("");
+  const [errorPasswordSignup, setErrorPasswordSignup] = useState("");
 
   useEffect(() => {
     const signup = document.querySelector(".signup");
@@ -44,13 +53,26 @@ const Login = () => {
 
   // Function to handle login
   const handleLogin = async () => {
-    setError("");
-    if (!email || !password) {
-      setError("Email and password are required.");
+    setErrorLog("");
+    setErrorEmail("");
+    setErrorPassword("");
+
+    if (!email || !password ) {
+        if (!email) setErrorEmail("Email is required.");
+        if(!password) setErrorPassword("Password is required.");
       return;
     }
-
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrorEmail("Please enter a valid email address.");
+      return;
+    }
+    // if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+    //   setErrorPassword("Password must be at least 8 characters long and contain letters and numbers.");
+    //   return;
+    // }
     try {
+      setErrorPassword("");
+      setErrorEmail("");
       const response = await fetch("http://127.0.0.1:8000/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,43 +87,93 @@ const Login = () => {
         alert("Login successful!");
         window.location.href = "/shop";
       } else {
-        setError(data.error || "Login failed");
+        setErrorLog(data.error || "Login failed");
       }
     } catch (error) {
-      setError("Network error. Please try again.");
+      setErrorLog("Network error. Please try again.");
     }
   };
 
+  const validateInputs = () => {
+    let hasErrors = false;
+
+    // Reset all errors
+    setErrorName('');
+    setErrorEmailSignup('');
+    setErrorPasswordSignup('');
+    setErrorConfirmPassword('');
+    setErrorRegister('');
+
+    // Name validation
+    if (!name) {
+      setErrorName('Name is required.');
+      hasErrors = true;
+    } else if (name.length < 2) {
+      setErrorName('Name must be at least 2 characters long.');
+      hasErrors = true;
+    }
+
+    // Email validation
+    if (!emailRegister) {
+      setErrorEmailSignup('Email is required.');
+      hasErrors = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRegister)) {
+      setErrorEmailSignup('Please enter a valid email address.');
+      hasErrors = true;
+    }
+
+    // Password validation
+    if (!passwordSignup) {
+      setErrorPasswordSignup('Password is required.');
+      hasErrors = true;
+    } else if (passwordSignup.length < 8 || !/[a-zA-Z]/.test(passwordSignup) || !/\d/.test(passwordSignup)) {
+      setErrorPasswordSignup('Password must be at least 8 characters long and contain letters and numbers.');
+      hasErrors = true;
+    }
+
+    // Confirm password validation
+    if (!confirmPassword) {
+      setErrorConfirmPassword('Please confirm your password.');
+      hasErrors = true;
+    } else if (confirmPassword !== passwordSignup) {
+  setErrorConfirmPassword('Passwords do not match.');
+      hasErrors = true;
+    }
+
+    return !hasErrors;
+  };
+
+  // Handle input changes for real-time validation
+  const handleInputChange = () => {
+    validateInputs();
+  };
+
+  // Handle signup button click
   const handleRegister = async () => {
-    setError("");
-    if (!email || !password || !confirmPassword || !name) {
-      setError("Required parameters");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      const data = await response.json();
-      console.log(data);
-
-      if (response.ok) {
-        
-        alert("Register successful!");
-        window.location.href = "/login";
-      } else {
-        setError(data.error || "Register failed");
+    const isValid = validateInputs();
+    if (isValid) {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/register/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emailRegister, passwordSignup, name }),
+        });
+  
+        const data = await response.json();
+        console.log(data);
+  
+        if (response.ok) {
+          
+          alert("Register successful!");
+          window.location.href = "/login";
+        } else {
+          setErrorRegister(data.error || "Register failed");
+        }
+      } catch (error) {
+        setErrorRegister("Network error. Please try again.");
       }
-    } catch (error) {
-      setError("Network error. Please try again.");
+    } else {
+      setErrorRegister('Please fix the errors above to sign up.');
     }
   };
   return (
@@ -123,6 +195,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <span className="error-message">{errorEmail}</span>
             <input
               type="password"
               className="password ele rounded"
@@ -130,49 +203,68 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button className="clkbtn" onClick={handleLogin}>
-              Login
-            </button>
-            {error && <p className="error-message">{error}</p>}
-          </div>
+            <span className="error-message">{errorPassword}</span>
+            <div className="d-flex justify-content-center">
+              <button className="clkbtn" onClick={handleLogin}>
+                Login
+              </button>
+            </div>
 
-          {/* Signup Form (To be implemented later) */}
+            {errorLog && <span className="error-message text-center">{errorLog}</span>}
+          </div>
+          {/* Signup Form */}
           <div className="signup-box">
-            <input
-              type="text"
-              className="name ele rounded"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="email"
-              className="email ele rounded"
-              placeholder="youremail@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-
-            />
-            <input
-              type="password"
-              className="password ele rounded"
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-
-            />
-            <input
-              type="password"
-              className="password ele rounded"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-
-            />
-            <button className="clkbtn" onClick={handleRegister}>Signup</button>
-            {error && <p className="error-message">{error}</p>}
-          
-          </div>
+      <input
+        type="text"
+        className="name ele rounded"
+        placeholder="Enter your name"
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
+          handleInputChange();
+        }}
+      />
+      <span className="error-message">{errorName}</span>
+      <input
+        type="email"
+        className="email ele rounded"
+        placeholder="youremail@email.com"
+        value={emailRegister}
+        onChange={(e) => {
+          setEmailRegister(e.target.value);
+          handleInputChange();
+        }}
+      />
+      <span className="error-message">{errorEmailSignup}</span>
+      <input
+        type="password"
+        className="password ele rounded"
+        placeholder="password"
+        value={passwordSignup}
+        onChange={(e) => {
+          setPasswordSignup(e.target.value);
+          handleInputChange();
+        }}
+      />
+      <span className="error-message">{errorPasswordSignup}</span>
+      <input
+        type="password"
+        className="password ele rounded"
+        placeholder="Confirm password"
+        value={confirmPassword}
+        onChange={(e) => {
+          setConfirmPassword(e.target.value);
+          handleInputChange();
+        }}
+      />
+      <span className="error-message">{errorConfirmPassword}</span>
+      <div className="d-flex justify-content-center">
+        <button className="clkbtn" onClick={handleRegister}>
+          Signup
+        </button>
+      </div>
+      <span className="error-message text-center">{errorRegister}</span>
+    </div>
         </div>
       </div>
       <div className="col-5 d-flex align-items-center justify-content-center pb-5"></div>

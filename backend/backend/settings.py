@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     'store',
-    "cart"
+    "cart",
+    'addresses',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +103,9 @@ DATABASES = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React frontend
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000"
 ]
 
 REST_FRAMEWORK = {

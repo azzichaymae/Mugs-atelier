@@ -79,6 +79,7 @@
     position: relative;
     transition: all 0.5s ease-in-out;
     left: 0px;
+    text-align: start;
 }
 
 .form-section-move {
@@ -91,7 +92,7 @@
     width: 500px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    
     
     padding: 10px 40px;
 }
@@ -110,10 +111,19 @@
     outline: none;
     border: none;
     color: rgb(77, 77, 77);
-   
+    
     
     padding-left: 30px;
     font-size: 15px;
+}
+.error-message{
+    color: red;
+    font-size: small;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 500;
+    margin-bottom: 10px;
+    
+    
 }
 
 .clkbtn {
@@ -245,6 +255,7 @@
         height: 40px;
         width: 220px;
         font-size: 15px;
+        
     }
 
     .clkbtn {

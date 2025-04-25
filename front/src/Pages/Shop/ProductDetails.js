@@ -31,13 +31,13 @@ const ProductDetails = ( ) => {
   
   const handleBuyNow = () => {
     // Buy now logic here
-    console.log("Buy now:", product);
+    // console.log("Buy now:", product);
   };
   const fetchProductDetails = async () => {
     try {
       const response = await fetch(`http://127.0.0.1:8000/products/product/${id}/`);
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       setProduct(data);
 
       return data;
@@ -49,7 +49,7 @@ const ProductDetails = ( ) => {
     fetchProductDetails();
   }, [id]);
 
-  console.log(product);
+  
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -215,13 +215,13 @@ const ProductDetails = ( ) => {
         </div> */}
             <div>
               <div class="row">
-                <div class="col text-xs font-semibold text-gray-600">Size</div>
+                {/*    */}
                 <div class="col text-xs font-semibold text-gray-600">
                   Quantity
                 </div>
               </div>
               <div class="row">
-                <div class="col">
+                {/* <div class="col">
                   <select
                     class="col-6 border border-gray-300 rounded px-3 py-2 text-xs w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700"
                     id="size"
@@ -232,13 +232,16 @@ const ProductDetails = ( ) => {
                     <option>12 oz</option>
                     <option>16 oz</option>
                   </select>
-                </div>
+                </div> */}
                 <div class="col">
                   <input
                     aria-label="Quantity"
                     class="w-16 border border-gray-300 rounded   py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700"
                     min="1"
                     type="number"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    
                      
                   />
                 </div>
@@ -275,7 +278,7 @@ const ProductDetails = ( ) => {
             </div>
             <div class="flex items-center space-x-3">
               <button 
-                onClick={() => addToCart(product)}  
+                onClick={() => addToCart(product,quantity)}  
                 aria-label="Add to cart"
                 class="flex items-center justify-center space-x-2 border border-teal-700 text-teal-700 text-xs font-semibold rounded px-4 py-2 hover:bg-teal-50"
               >

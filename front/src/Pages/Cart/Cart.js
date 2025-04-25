@@ -27,27 +27,24 @@ const Cart = () => {
   const shipping = 10.0;
   const total = subtotal + shipping;
   const changeQuantity = (operation, item) => {
+    const q = parseInt(item.quantity)
     if (operation === "-") {
       return () => {
-        if (item.quantity > 1) {
-          updateQuantity(item.id, item.quantity - 1);
+        if (q > 1) {
+          updateQuantity(item.id, q - 1);
         } else {
-          if (
-            window.confirm(
-              "Are you sure you want to remove this item from the cart?"
-            )
-          ) {
+          
             removeFromCart(item.id);
-          } else {
-            return null;
-          }
+         
         }
       };
     } else if (operation === "+") {
+      
       return () => {
-        updateQuantity(item.id, item.quantity + 1);
+        updateQuantity(item.id, q + 1);
       };
     }
+    
   };
 
   return (
@@ -121,7 +118,7 @@ const Cart = () => {
                         </button>
                         <span
                           value={item.quantity}
-                          min="1"
+                          
                           class="px-2 py-1 text-center w-12"
                         >
                           {item.quantity}

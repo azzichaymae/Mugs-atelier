@@ -1,14 +1,15 @@
 import React from "react";
 // import "./Cart.css";
 import { useCart } from "../../context/CartContext";
-
 import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Cart = () => {
-  const { cart } = useCart();
-  const { updateQuantity } = useCart();
-  const { removeFromCart } = useCart();
+  const { cart, updateQuantity, removeFromCart } = useCart();
+  const navigate = useNavigate();
+
   const cartItems = cart.map((item) => ({
     id: item.id,
     name: item.name,
@@ -26,29 +27,53 @@ const Cart = () => {
     .reduce((a, b) => a + b, 0);
   const shipping = 10.0;
   const total = subtotal + shipping;
+
   const changeQuantity = (operation, item) => {
-    const q = parseInt(item.quantity)
+    const q = parseInt(item.quantity);
     if (operation === "-") {
       return () => {
         if (q > 1) {
           updateQuantity(item.id, q - 1);
         } else {
-          
-            removeFromCart(item.id);
-         
+          removeFromCart(item.id);
         }
       };
     } else if (operation === "+") {
-      
       return () => {
         updateQuantity(item.id, q + 1);
       };
     }
-    
+  };
+
+  const handleProceedToCheckout = () => {
+    // Check if cart is empty
+    if (isCartEmpty) {
+      toast.error("Your cart is empty. Please add items to proceed.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    // Check if user is logged in
+    const userId = localStorage.getItem("user_id") || null;
+    if (!userId) {
+      if (window.confirm("Please log in to proceed to checkout.")) {
+        navigate("/login?redirect=/checkout");
+      }
+      return;
+    }
+
+    // If user is logged in and cart is not empty, proceed to checkout
+    toast.success("Proceeding to checkout...", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+    navigate("/checkout");
   };
 
   return (
-    <div class=" min-h-screen p-6">
+    <div class="min-h-screen bg-[#f5f2ed] p-6">
       <nav class="flex space-x-6 text-sm font-normal text-gray-500 mb-6">
         <Link to="/" class="hover:text-gray-700 m-0 p-0">
           <i class="fa fa-solid fa-house"></i>{" "}
@@ -64,6 +89,7 @@ const Cart = () => {
         </Link>
       </nav>
       <div class="max-w-7xl mx-auto">
+        <ToastContainer />
         <div class="flex flex-col lg:flex-row gap-6">
           <div class="bg-white rounded-lg border border-transparent shadow-sm flex-1 p-6 max-w-4xl">
             {isCartEmpty ? (
@@ -76,10 +102,7 @@ const Cart = () => {
                 <h2 class="text-lg font-semibold text-[#1a1a1a] mb-2">
                   Your cart is empty
                 </h2>
-                <p
-                  class="text-gray-
-                    600 mb-4"
-                >
+                <p class="text-gray-600 mb-4">
                   Add some products to your cart to get started.
                 </p>
                 <Link
@@ -90,7 +113,6 @@ const Cart = () => {
                 </Link>
               </div>
             ) : (
-               
               cartItems.map((item) => (
                 <div className="d-flex justify-between items-center border-b border-gray-200 py-4">
                   <div class="flex items-center gap-6 w-2/3">
@@ -100,14 +122,11 @@ const Cart = () => {
                       class="rounded-md"
                       style={{ height: "100px" }}
                     />
-
-                    
                     <div class="flex flex-col gap-1">
                       <span class="text-gray-700 text-sm">{item.name}</span>
                       <span class="text-gray-500 text-xs">
                         ${item.price.toFixed(2)} each
                       </span>
-
                       <div class="flex items-center gap-3 mt-2">
                         <button
                           aria-label="Decrease quantity"
@@ -118,7 +137,6 @@ const Cart = () => {
                         </button>
                         <span
                           value={item.quantity}
-                          
                           class="px-2 py-1 text-center w-12"
                         >
                           {item.quantity}
@@ -133,11 +151,12 @@ const Cart = () => {
                       </div>
                     </div>
                   </div>
-                  <div class="flex flex-col items-end gap-4 ">
+                  <div class="flex flex-col items-end gap-4">
                     <span class="text-brown-400 font-semibold text-sm">
-                      {item.price * item.quantity} USD
+                      {(item.price * item.quantity).toFixed(2)} USD
                     </span>
-                    <button onClick={() => removeFromCart(item.id)}
+                    <button
+                      onClick={() => removeFromCart(item.id)}
                       aria-label="Remove item"
                       class="text-red-500 text-lg"
                     >
@@ -152,7 +171,7 @@ const Cart = () => {
             <h2 class="font-semibold text-[#1a1a1a] mb-4">Order Summary</h2>
             <div class="flex justify-between text-gray-600 mb-2">
               <span>Subtotal</span>
-              <span>${subtotal}</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
             <div class="flex justify-between text-gray-600 mb-4">
               <span>Shipping</span>
@@ -163,7 +182,10 @@ const Cart = () => {
               <span>Total</span>
               <span>${total.toFixed(2)}</span>
             </div>
-            <button class="w-full bg-[#8B6F47] text-white py-3 rounded-md text-center text-sm font-normal hover:bg-[#D4C7B0] transition">
+            <button
+              onClick={handleProceedToCheckout}
+              class="w-full bg-[#8B6F47] text-white py-3 rounded-md text-center text-sm font-normal hover:bg-[#D4C7B0] transition"
+            >
               Proceed to Checkout
             </button>
           </aside>

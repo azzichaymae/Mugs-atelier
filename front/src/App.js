@@ -9,6 +9,10 @@ import Cart from "./Pages/Cart/Cart";
 
 import AccountPage from "./Pages/Details/Account";
 import ProductDetails from "./Pages/Shop/ProductDetails";
+import ProductRatings from "./Pages/Ratings/ProductRatings";
+import Checkout from "./Pages/Cart/Checkout";
+
+
 
 function App() {
 
@@ -25,6 +29,8 @@ function App() {
             <Route path="/account" element={<AccountPage />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/products/:id/rate" element={< ProductRatings/>} />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
         </div>
       </BrowserRouter>

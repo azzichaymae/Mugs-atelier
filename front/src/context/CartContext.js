@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 // Create the context
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const CartContext = createContext();
 
 // Custom hook for using the cart
@@ -15,21 +17,30 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+  });
 
-  const addToCart = (product , quantity) => {
+  const addToCart = (product, quantity) => {
    
+
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === product.id);
+      let newCart;
+
       if (existing) {
-        return prevCart.map((item) =>
+        newCart = prevCart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: product.quantity + quantity }
+            ? { ...item, quantity: parseInt(item.quantity) + parseInt(quantity) }
             : item
         );
+      } else {
+        newCart = [...prevCart, { ...product, quantity }];
       }
-      return [...prevCart, { ...product, quantity: quantity }];
+
+      // Log the new cart state immediately after updating
+      
+      return newCart;
     });
+     toast.success("Product added successfully!");
   };
   const updateQuantity = (id, newQuantity) => {
     setCart((prevCart) =>
@@ -44,7 +55,14 @@ export const CartProvider = ({ children }) => {
     }
     return null;
   };
-  const value = { cart, addToCart, updateQuantity ,removeFromCart};
+  const clearCart = () => {
+  
+    setCart([]);
+    localStorage.removeItem('cart');
+    
+  }
+
+  const value = { cart, addToCart, updateQuantity ,removeFromCart, clearCart};
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

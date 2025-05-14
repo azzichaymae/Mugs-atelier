@@ -15,11 +15,12 @@ import { useCart } from "../../context/CartContext";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const id = localStorage.getItem("user_id") || null;
+  const id = localStorage.getItem("user_id") ;
+  console.log(id)
   const { cart } = useCart();
-  
+
   const totalItems = cart.length;
-  
+
   useEffect(() => {
     const handleScroll = () => {
       const navbar = document.querySelector(".navbar");
@@ -52,25 +53,27 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-container px-6  max-w-full">
+      <div className="navbar-container px-4">
         <div className="logo-container">
           <NavLink to="/">
-            {" "}
-            <img src="logo.png" alt="Mugs' Atelier" />
+            <img src="logo.png" alt="Mugs' Atelier" className="logo-img" />
           </NavLink>
           <div className="logo-text">
-            <h4>Mugs' Atelier</h4>
-            <p id="p">Unique Mugs for Every Taste</p>
+            <h4 className="logo-title">Mugs' Atelier</h4>
+            <p id="p" className="logo-subtitle">Unique Mugs for Every Taste</p>
           </div>
         </div>
-        <div class="flex-1 max-w-lg mx-6">
-          <div class="relative">
+        
+        <div className="flex-1 max-w-sm mx-4">
+          <div className="relative">
             <input
-              class="w-full rounded-full bg-[#EDE5D9] text-[#7F6649] text-sm py-2 px-4 pl-10 placeholder-[#7F6649] focus:outline-none"
+              className="w-full rounded-full bg-[#EDE5D9] text-[#7F6649] text-xs py-1 px-3 pl-8 placeholder-[#7F6649] focus:outline-none focus:ring-2 focus:ring-[#7F6649] "
               placeholder="Search"
               type="text"
             />
-            <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-[#7F6649] text-sm"></i>
+            <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#7F6649]">
+              <FaSearch />
+            </span>
           </div>
         </div>
         <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
@@ -79,12 +82,12 @@ const Navbar = () => {
         <ul className={`menu ${menuOpen ? "open" : ""}`}>
           <li>
             <NavLink to="/" onClick={() => setMenuOpen(false)}>
-              <FaHome /> Home
+              <FaHome /><span className="ml-1">Home</span>
             </NavLink>
           </li>
           <li>
             <NavLink to="/shop" onClick={() => setMenuOpen(false)}>
-              <FaStore /> Shop
+              <FaStore /> <span className="ml-1">Shop</span>
             </NavLink>
           </li>
           <li>
@@ -92,7 +95,7 @@ const Navbar = () => {
               to={id ? "/account" : "/login"}
               onClick={() => setMenuOpen(false)}
             >
-              <FaUser /> Account
+              <FaUser /> <span className="ml-1">Account</span>
             </NavLink>
           </li>
           <li>
@@ -103,7 +106,7 @@ const Navbar = () => {
             >
               <FaShoppingCart />
               <span className="cart-count">{totalItems}</span>
-              Cart
+              <span className="ml-1">Cart</span>
             </NavLink>
           </li>
         </ul>

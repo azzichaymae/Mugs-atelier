@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate ,useLocation} from "react-router-dom";
 import "./Login.css";
 
 const Login = () => {
-  const [name, setName] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const redirectUrl = new URLSearchParams(window.location.search).get("redirect") || "/shop";  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [emailRegister, setEmailRegister] = useState("");
   const [password, setPassword] = useState("");
@@ -52,40 +56,39 @@ const Login = () => {
   }, []);
 
   // Function to handle login
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
     setErrorLog("");
     setErrorEmail("");
     setErrorPassword("");
-
-    if (!email || !password ) {
-        if (!email) setErrorEmail("Email is required.");
-        if(!password) setErrorPassword("Password is required.");
+  
+    if (!email || !password) {
+      if (!email) setErrorEmail("Email is required.");
+      if (!password) setErrorPassword("Password is required.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setErrorEmail("Please enter a valid email address.");
       return;
     }
-    // if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
-    //   setErrorPassword("Password must be at least 8 characters long and contain letters and numbers.");
-    //   return;
-    // }
+  
     try {
       setErrorPassword("");
       setErrorEmail("");
       const response = await fetch("http://127.0.0.1:8000/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-
+  
+      // Parse the JSON response
       const data = await response.json();
-      console.log(data);
-
+  
       if (response.ok) {
         localStorage.setItem("user_id", data.user.id);
         alert("Login successful!");
-        window.location.href = "/shop";
+        navigate(redirectUrl);
       } else {
         setErrorLog(data.error || "Login failed");
       }
@@ -135,8 +138,10 @@ const Login = () => {
     if (!confirmPassword) {
       setErrorConfirmPassword('Please confirm your password.');
       hasErrors = true;
-    } else if (confirmPassword !== passwordSignup) {
+    } else if (confirmPassword != passwordSignup) {
   setErrorConfirmPassword('Passwords do not match.');
+  console.log(confirmPassword)
+  console.log(passwordSignup)
       hasErrors = true;
     }
 

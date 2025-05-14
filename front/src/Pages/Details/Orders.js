@@ -1,77 +1,204 @@
+import React, { useEffect, useState } from "react";
+
 const Orders = () => {
-     return(
-    <div id="orders-content" class=" tab-content bg-beige-200 p-6 rounded-lg  full-width w-full  min-h-screen " >
-        <h1 class="text-xl  mb-4 flex items-center">
-            <i class="fas fa-box mr-2"></i> Order History
-        </h1>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-beige-200">
-                <thead>
-                    <tr>
-                        <th class="py-2 px-4 text-left">Order ID</th>
-                        <th class="py-2 px-4 text-left">Date</th>
-                        <th class="py-2 px-4 text-left">Status</th>
-                        <th class="py-2 px-4 text-left">Items</th>
-                        <th class="py-2 px-4 text-left">Total</th>
-                        <th class="py-2 px-4 text-left">Actions</th>
-                    </tr>
-                </thead>
-                {/* <tbody>
-                    <tr class="border-t border-beige-300">
-                        <td class="py-2 px-4">ORD-5123</td>
-                        <td class="py-2 px-4">15 Mar 2024</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-800 text-sm font-semibold px-2 py-1 rounded-full">Delivered</span>
-                        </td>
-                        <td class="py-2 px-4">3</td>
-                        <td class="py-2 px-4">$75.99</td>
-                        <td class="py-2 px-4 flex space-x-2">
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr class="border-t border-beige-300">
-                        <td class="py-2 px-4">ORD-4892</td>
-                        <td class="py-2 px-4">28 Feb 2024</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-2 py-1 rounded-full">Shipped</span>
-                        </td>
-                        <td class="py-2 px-4">1</td>
-                        <td class="py-2 px-4">$29.99</td>
-                        <td class="py-2 px-4 flex space-x-2">
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr class="border-t border-beige-300">
-                        <td class="py-2 px-4">ORD-4581</td>
-                        <td class="py-2 px-4">12 Jan 2024</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-800 text-sm font-semibold px-2 py-1 rounded-full">Delivered</span>
-                        </td>
-                        <td class="py-2 px-4">2</td>
-                        <td class="py-2 px-4">$46.50</td>
-                        <td class="py-2 px-4 flex space-x-2">
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button class="bg-white p-2 rounded-full shadow">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody> */}
-            </table>
-        </div>
+  const [orders, setOrders] = useState([]);
+  const userId = 1; // Replace with the actual user ID dynamically
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const openModal = (order) => {
+    setSelectedOrder(order);
+  };
+
+  const closeModal = () => {
+    setSelectedOrder(null);
+  };
+
+  const deleteOrder = async (orderId, orderStatus) => {
+    if (orderStatus !== "Delivered") {
+      alert("You can only delete delivered orders.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this order?")) {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/orders/${orderId}/`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (response.ok) {
+          alert("Order deleted successfully!");
+          setOrders((prevOrders) =>
+            prevOrders.filter((order) => order.order_id !== orderId)
+          );
+        } else {
+          alert("Failed to delete the order.");
+        }
+      } catch (error) {
+        console.error("Error deleting order:", error);
+      }
+    }
+  };
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/orders/?user_id=${userId}`
+        );
+        const data = await response.json();
+        setOrders(data.orders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  return (
+    <section
+    id="orders-content"
+      class=" tab-content max-w-4xl w-full rounded-lg border border-[#c9c5a1] bg-[#f3f0de] p-6"
+      aria-label="Order History Section"
+    >
+      <h2 class="flex items-center text-[#4a4a3a] font-semibold text-lg mb-4 select-none">
+       <i class="fa fa-light fa-box mr-2"></i>
+        Order History
+      </h2>
+      <table
+        class="w-full border border-[#c9c5a1] rounded-md text-[#7a765a] text-sm"
+        role="table"
+      >
+        <thead>
+          <tr class="border-b border-[#c9c5a1]">
+            <th class="py-3 px-4 text-left font-normal">Order ID</th>
+            <th class="py-3 px-4 text-left font-normal">Date</th>
+            <th class="py-3 px-4 text-left font-normal">Status</th>
+            <th class="py-3 px-4 text-left font-normal">Items</th>
+            <th class="py-3 px-4 text-left font-normal">Total</th>
+            <th class="py-3 px-4 text-left font-normal">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.length > 0 ? (
+              orders.map((order) => (
+                <tr key={order.order_id} className="border-b border-[#c9c5a1]">
+                  <td className="py-3 px-4 font-semibold text-[#3a3a2a]">{order.order_id}</td>
+                  <td className="py-3 px-4">
+                    {order.created_at}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`inline-block rounded px-2 py-[2px] text-xs font-medium ${
+                        order.status === "Delivered"
+                          ? "text-[#2f7a4f] bg-[#d9f7e1]"
+                          : order.status === "Shipped"
+                          ? "text-[#2a4f7a] bg-[#d9e6f7]"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    {order.items.length}
+                  </td>
+                  <td className="py-3 px-4 font-semibold text-[#3a3a2a]">
+                    ${order.total_price}
+                  </td>
+                  <td className="py-3 px-4 flex space-x-2">
+                    <button
+                      className="bg-white p-2 rounded-full shadow"
+                      onClick={() => openModal(order)}
+                    >
+                      <i className="fas fa-search"></i>
+                    </button>
+                    <button
+                      className={`bg-white p-2 rounded-full shadow ${
+                        order.status !== "Delivered"
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      onClick={() => deleteOrder(order.order_id)}
+                      disabled={order.status !== "Delivered"}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="py-4 px-4 text-center text-gray-500" colSpan="6">
+                  No orders found
+                </td>
+              </tr>
+            )}
+          {selectedOrder && (
+  <div className="fixed inset-0 bg-gray-900 bg-opacity-70   flex justify-center items-center z-50">
+    <div className="bg-[#f5f2ed] rounded-lg shadow-md w-full max-w-lg mx-4 p-6">
+      <h2 className="text-xl font-medium text-gray-800 mb-4">Order Details</h2>
+      <div className="space-y-3 border-b border-gray-200 pb-4">
+        <p className="text-gray-700 text-sm">
+          <span className="font-medium">Order ID:</span> {selectedOrder.order_id}
+        </p>
+        <p className="text-gray-700 text-sm">
+          <span className="font-medium">Date:</span> {selectedOrder.created_at}
+        </p>
+        <p className="text-gray-700 text-sm">
+          <span className="font-medium">Status:</span>{" "}
+          <span
+            className={`ml-2 px-2 py-1 rounded text-xs ${
+              selectedOrder.status === "Delivered"
+                ? "bg-green-100 text-green-800"
+                : selectedOrder.status === "Shipped"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {selectedOrder.status}
+          </span>
+        </p>
+        <p className="text-gray-700 text-sm">
+          <span className="font-medium">Total:</span> ${selectedOrder.total_price}
+        </p>
+      </div>
+
+      {/* Display Order Items */}
+      <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Items</h3>
+      <ul className="space-y-2 mb-6">
+        {selectedOrder.items.length > 0 ? (
+          selectedOrder.items.map((item, index) => (
+            <li
+              key={index}
+              className="flex justify-between items-center text-gray-700 text-sm py-2 border-b border-gray-100"
+            >
+              <span className="font-medium">{item.product_name}</span>
+              <span>
+                {item.quantity} x ${item.price}
+              </span>
+            </li>
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm italic">No items in this order.</p>
+        )}
+      </ul>
+
+      <button
+        className="w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-sm font-medium"
+        onClick={closeModal}
+      >
+        Close
+      </button>
     </div>
-     )
-}
+  </div>
+)}
+        </tbody>
+      </table>
+    </section>
+  );
+};
+
 export default Orders;

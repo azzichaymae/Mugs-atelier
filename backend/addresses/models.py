@@ -7,11 +7,11 @@ class Address(models.Model):
      city = models.CharField(max_length=100)
      postal_code = models.CharField(max_length=20)
      country = models.CharField(max_length=100)
-     state = models.CharField(max_length=100, blank=True, null=True)
+     
      address_type = models.CharField(
         max_length=50, 
-        choices=[('home', 'Home'), ('office', 'Office'), ('other', 'Other')],
-        default='home'
+        choices=[( 'Home','Home'), ( 'Office','Office'), ( 'Other','Other')],
+        default='Home'
     )
 
      def __str__(self):

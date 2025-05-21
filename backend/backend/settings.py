@@ -29,8 +29,10 @@ SECRET_KEY = 'django-insecure-y^e3zc@z%9)tll@8$%^!6aj-p2t0_lu#%baphkf9=rqjc*ey8z
 DEBUG = True
 
 ALLOWED_HOSTS = []
+LOGIN_URL = '/login/'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/media/' 
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Application definition
 
@@ -48,17 +50,18 @@ INSTALLED_APPS = [
     'store',
     "cart",
     'addresses',
+
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Must be first for CORS
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Required for sessions
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # For CSRF protection
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # Sets request.user
+    'django.contrib.messages.middleware.MessageMiddleware',  # For messages, after SessionMiddleware
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -66,7 +69,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['../users./templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -102,12 +105,14 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000"
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

@@ -1,14 +1,16 @@
 from django.contrib import admin
-from django.urls import path, include 
-
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from backend.custom_admin import custom_admin_site  
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    
     path('', include('users.urls')),
     path('products/', include('store.urls')),
-    path('', include('addresses.urls'))
+    path('', include('addresses.urls')),
+    path('admin/', custom_admin_site.urls),
+    path('', include('cart.urls')),
 ]
 
 if settings.DEBUG:

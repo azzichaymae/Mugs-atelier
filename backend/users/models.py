@@ -10,4 +10,3 @@ class User(models.Model):
      name = models.CharField(max_length=30,default="")
      address = models.CharField(max_length=50,default="")
      phone_number = models.CharField(max_length=15,default="")
-

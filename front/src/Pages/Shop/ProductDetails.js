@@ -264,7 +264,7 @@ const ProductDetails = () => {
                   aria-label="Add to cart"
                   id="add-to-cart"
                   
-className="w-100 flex items-center justify-center space-x-2 bg-[#977C54] text-white font-bold rounded-50 px-5 py-2 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#B78C14] disabled:bg-[#977C54] disabled:hover:bg-[#977C54] disabled:shadow-none disabled:opacity-60 disabled:cursor-not-allowed relative group"                >
+className="btn btn-warning flex items-center justify-center space-x-2  text-white  px-5 py-1 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#fbcb2b]   relative group"                >
                   <i className="fas fa-shopping-cart text-2xl drop-shadow-md"></i>
                   <span className="text-md">Add to Cart</span>
 

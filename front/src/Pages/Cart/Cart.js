@@ -49,8 +49,11 @@ const Cart = () => {
     // Check if cart is empty
     if (isCartEmpty) {
       toast.error("Your cart is empty. Please add items to proceed.", {
-        position: "top-right",
-        autoClose: 3000,
+       position: "top-center",
+              autoClose: 1500,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
       });
       return;
     }
@@ -66,7 +69,7 @@ const Cart = () => {
 
     // If user is logged in and cart is not empty, proceed to checkout
     toast.success("Proceeding to checkout...", {
-      position: "top-right",
+      position: "top-center",
       autoClose: 2000,
     });
     navigate("/checkout");

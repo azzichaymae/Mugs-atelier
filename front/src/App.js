@@ -12,12 +12,14 @@ import ProductDetails from "./Pages/Shop/ProductDetails";
 import ProductRatings from "./Pages/Ratings/ProductRatings";
 import Checkout from "./Pages/Cart/Checkout";
 
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
 
   return (
     <div className="App">
+      <ToastContainer />
       <BrowserRouter>
         <Navbar />
         {""}

@@ -134,7 +134,16 @@ const Profile = () => {
         }
 
         if (responseData.message === "User updated successfully") {
-          toast.success("Profile updated successfully!");
+          toast.success("Profile updated successfully!",
+            {
+              position: "top-center",
+              autoClose: 1500,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+              
+              }
+          );
           formik.setValues({
             ...values,
             currentPassword: "",

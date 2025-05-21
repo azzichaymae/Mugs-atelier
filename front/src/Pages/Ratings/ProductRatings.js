@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const ProductRatings = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
@@ -131,10 +132,20 @@ const ProductRatings = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        alert("Thank you for your review!");
-        setRatings((prevRatings) => [...prevRatings, data]);
-      }
+  const data = await response.json();
+  toast.success("Thank you for your review!", {
+    position: "top-center",
+    autoClose: 1500,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: false,
+    draggable: true,
+    onClose: () => {
+      setRatings((prevRatings) => [...prevRatings, data]);
+      navigate(`/product/${id}`);
+    },
+  });
+}
     } catch (err) {
       console.error("Error submitting review:", err);
       alert("An error occurred while submitting your review.");
@@ -142,7 +153,9 @@ const ProductRatings = () => {
   };
 
   return (
+  
     <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style={{ minHeight: "100vh" }}>
+        <ToastContainer/>
       <nav className="flex space-x-6 text-sm font-normal text-gray-500 mb-6">
         <Link to="/" className="hover:text-gray-700 m-0 p-0">
           <i className="fa fa-solid fa-house"></i>{" "}

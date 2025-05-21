@@ -118,8 +118,11 @@ const Addresses = () => {
       .then(() => {
         setAddresses(addresses.filter((address) => address.id !== id));
         toast.success("Address deleted successfully.", {
-                  position: "top-right",
-                  autoClose: 2000,
+                  position: "top-center",
+              autoClose: 1500,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
                 });
       })
       .catch((err) => {

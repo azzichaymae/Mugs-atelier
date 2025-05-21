@@ -4,11 +4,11 @@
   min-height: 100vh;
 }
 
-h1 {
+/* h1 {
   color: #3c2d1f;
   text-align: center;
   font-size: 2rem;
-}
+} */
 
 .subtitle {
   text-align: center;
@@ -400,9 +400,7 @@ label {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.flex {
-  display: flex;
-}
+
 
 .space-x-2 > * + * {
   margin-left: 0.5rem;

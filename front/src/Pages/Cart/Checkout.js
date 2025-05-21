@@ -7,8 +7,9 @@ import "react-toastify/dist/ReactToastify.css";
 const Checkout = () => {
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
-
-  // Prepare cart items for submission
+  const [action, setAction] = useState("info");
+  const [isLoading, setIsLoading] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
   const cartItems = cart.map((item) => ({
     id: item.id,
     name: item.name,
@@ -19,8 +20,8 @@ const Checkout = () => {
   const subtotal = cartItems
     .map((item) => item.price * item.quantity)
     .reduce((a, b) => a + b, 0);
-  const shipping = 4.99; // Adjusted to match image
-  const tax = 5.6; // Added tax from image
+  const shipping = 4.99;
+  const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
   const [formData, setFormData] = useState({
@@ -28,14 +29,14 @@ const Checkout = () => {
     lastName: "",
     email: "",
     phone: "",
-    streetAddress: "",
+    street: "",
     city: "",
-    stateProvince: "",
     postalCode: "",
     country: "",
     cardNumber: "",
     expiryDate: "",
     cvv: "",
+    saveAddress: false,
   });
   const [errors, setErrors] = useState({});
   const [addresses, setAddresses] = useState([]);
@@ -54,7 +55,6 @@ const Checkout = () => {
       try {
         const response = await fetch(`http://127.0.0.1:8000/find/${userId}/`);
         const data = await response.json();
-        console.log(data);
         setFormData((prevFormData) => ({
           ...prevFormData,
           firstName: data.name.split(" ")[0],
@@ -78,18 +78,16 @@ const Checkout = () => {
         const data = await response.json();
         setAddresses(data);
         if (data.length > 0) {
-          setSelectedAddressId(data[0].id); // Default to first address
+          setSelectedAddressId(data[0].id);
           setFormData((prevFormData) => ({
             ...prevFormData,
-            streetAddress: data[0].street_address || "",
+            street: data[0].street || "",
             city: data[0].city,
-            stateProvince: data[0].state_province || "",
             postalCode: data[0].postal_code,
             country: data[0].country,
           }));
         }
       } catch (error) {
-        console.error("Error fetching addresses:", error);
         toast.error("Failed to load addresses.", {
           position: "top-right",
           autoClose: 2000,
@@ -97,47 +95,80 @@ const Checkout = () => {
       }
     };
 
-    // Sequence the fetches: fetch user data first, then addresses
     const fetchData = async () => {
       await fetchUserById();
       await fetchAddresses();
     };
 
     fetchData();
-  }, [userId]);
+  }, [userId, navigate]);
 
-  // Validate form data before submission
+  // Validate a single field for real-time validation
+  const validateField = (name, value) => {
+    if (action !== "payment") return "";
+    switch (name) {
+      case "cardNumber":
+        return !value || !/^\d{16}$/.test(value)
+          ? "Valid 16-digit card number is required"
+          : "";
+      case "expiryDate":
+        return !value || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)
+          ? "Valid expiry date (MM/YY) is required"
+          : "";
+      case "cvv":
+        return !value || !/^\d{3,4}$/.test(value)
+          ? "Valid CVV (3-4 digits) is required"
+          : "";
+      default:
+        return "";
+    }
+  };
+
+  // Validate form data for submission
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.lastName) newErrors.lastName = "Last name is required";
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.phone) newErrors.phone = "Phone number is required";
-    if (!formData.streetAddress)
-      newErrors.streetAddress = "Street address is required";
-    if (!formData.city) newErrors.city = "City is required";
-    if (!formData.stateProvince)
-      newErrors.stateProvince = "State/Province is required";
-    if (!formData.postalCode) newErrors.postalCode = "Postal code is required";
-    if (!formData.country) newErrors.country = "Country is required";
-    if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber))
-      newErrors.cardNumber = "Valid 16-digit card number is required";
-    if (
-      !formData.expiryDate ||
-      !/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiryDate)
-    )
-      newErrors.expiryDate = "Valid expiry date (MM/YY) is required";
-    if (!formData.cvv || !/^\d{3,4}$/.test(formData.cvv))
-      newErrors.cvv = "Valid CVV (3-4 digits) is required";
-    if (!selectedAddressId)
-      newErrors.addressId = "Please select a shipping address";
+    if (action === "info") {
+      if (!formData.firstName) newErrors.firstName = "First name is required";
+      if (!formData.lastName) newErrors.lastName = "Last name is required";
+      if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email))
+        newErrors.email = "Valid email is required";
+      if (!formData.phone) newErrors.phone = "Phone number is required";
+      if (!formData.street) newErrors.street = "Street address is required";
+      if (!formData.city) newErrors.city = "City is required";
+      if (!formData.postalCode) newErrors.postalCode = "Postal code is required";
+      if (!formData.country) newErrors.country = "Country is required";
+      if (!selectedAddressId)
+        newErrors.addressId = "Please select a shipping address";
+    } else if (action === "payment") {
+      if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber))
+        newErrors.cardNumber = "Valid 16-digit card number is required";
+      if (
+        !formData.expiryDate ||
+        !/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiryDate)
+      )
+        newErrors.expiryDate = "Valid expiry date (MM/YY) is required";
+      if (!formData.cvv || !/^\d{3,4}$/.test(formData.cvv))
+        newErrors.cvv = "Valid CVV (3-4 digits) is required";
+    }
     return newErrors;
   };
 
-  // Handle form input changes
+  // Handle form input changes with real-time validation
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+
+    // Real-time validation for payment fields
+    if (action === "payment" && ["cardNumber", "expiryDate", "cvv"].includes(name)) {
+      const error = validateField(name, value);
+      setErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
+    }
   };
 
   // Handle address selection
@@ -150,9 +181,8 @@ const Checkout = () => {
     if (selectedAddress) {
       setFormData({
         ...formData,
-        streetAddress: selectedAddress.street_address || "",
+        street: selectedAddress.street || "",
         city: selectedAddress.city,
-        stateProvince: selectedAddress.state_province || "",
         postalCode: selectedAddress.postal_code,
         country: selectedAddress.country,
       });
@@ -166,11 +196,22 @@ const Checkout = () => {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error("Please fix the errors in the form.", {
-        position: "top-right",
-        autoClose: 3000,
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
       });
       return;
     }
+
+    if (action === "info") {
+      setAction("payment");
+      setErrors({});
+      return;
+    }
+
+    setIsLoading(true);
     const orderData = {
       user: userId,
       status: "pending",
@@ -182,581 +223,625 @@ const Checkout = () => {
       })),
       address_id: parseInt(selectedAddressId),
       total_amount: total.toFixed(2),
-      shipping_cost: shipping,
+      shipping_cost: shipping.toFixed(2),
+      tax: tax.toFixed(2),
+      save_address: formData.saveAddress,
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/checkout/", {
+      const fetchPromise = fetch("http://127.0.0.1:8000/checkout/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(orderData),
       });
-      const result = await response.json();
-      if (response.ok) {
-        toast.success("Order placed successfully!", {
-          position: "top-right",
-          autoClose: 2000,
+
+      const delayPromise = new Promise((resolve) => setTimeout(resolve, 4000));
+      const [response] = await Promise.all([fetchPromise, delayPromise]);
+ 
+
+      if (response.status === 200 || response.status === 201) {
+        const responseData = await response.json();
+        setOrderDetails({
+          orderId: responseData.order_id || "N/A",
+          items: cartItems,
+          shippingAddress: {
+            street: formData.street,
+            city: formData.city,
+            postalCode: formData.postalCode,
+            country: formData.country,
+          },
+          paymentMethod: `Card ending in ${formData.cardNumber.slice(-4)}`,
+          subtotal,
+          shipping,
+          tax,
+          total,
         });
+        setAction("confirmation");
         clearCart();
-        setTimeout(() => {
-          navigate("/shop");
-        }, 2200);
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || "Failed to place order.", {
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.log("Error data:", errorData);
+        } catch (jsonError) {
+          console.error("Failed to parse error response:", jsonError);
+          errorData = { error: "Invalid response from server" };
+        }
+        toast.error(errorData.error || `Failed to place order (status: ${response.status})`, {
           position: "top-right",
           autoClose: 3000,
         });
       }
     } catch (error) {
-      console.error("Error during checkout:", error);
-      toast.error("An error occurred during checkout.", {
+      console.error("Checkout error:", error);
+      toast.error(`An error occurred during checkout: ${error.message}`, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="  bg-[#f5f2ed] p-6">
+    <div className="min-h-screen p-6">
+      <style>
+        {`
+          .spinner {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #f6f0e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: inline-block;
+            background: #28a745;
+            position: relative;
+          }
+          .checkmark::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 40px;
+            border: solid #fff;
+            border-width: 0 6px 6px 0;
+            transform: translate(-50%, -60%) rotate(45deg);
+          }
+        `}
+      </style>
       <nav className="flex space-x-6 text-sm font-normal text-gray-500 mb-6">
-        <Link to="/" className="hover:text-gray-700">
-          <i className="fa fa-solid fa-house mx-1"></i>
+        <Link to="/" className="hover:text-gray-700 m-0 p-0">
+          <i className="fa fa-solid fa-house"></i>
         </Link>
         <span className="text-gray-400 mx-1">/</span>
-        <Link to="/shop" className="hover:text-gray-700 mx-1">
+        <Link to="/shop" className="hover:text-gray-700 m-0 p-0">
           Shop
         </Link>
         <span className="text-gray-400 mx-1">/</span>
-        <Link to={`/cart`} className="hover:text-gray-700 mx-1">
+        <Link to="/cart" className="hover:text-gray-700 m-0 p-0">
           Shopping Cart
         </Link>
         <span className="text-gray-400 mx-1">/</span>
         <span className="text-gray-700 mx-1">Checkout</span>
       </nav>
-      {/* <div className="max-w-7xl mx-auto">
+      <main className="max-w-[1200px] mx-auto">
         <ToastContainer />
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">Checkout</h1>
-          <p className="text-sm text-gray-600">Complete your purchase</p>
-        </div>
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="bg-white rounded-lg shadow p-6 flex-1">
-            <div className="flex items-center mb-4">
-              <i className="fas fa-map-marker-alt text-[#8B6F47] mr-2"></i>
-              <h2 className="text-lg font-semibold text-gray-800">
-                Shipping Information
-              </h2>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Select Saved Address
-              </label>
-              <select
-                value={selectedAddressId || ""}
-                onChange={handleAddressChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-              >
-                <option value="">Select an address</option>
-                {addresses.map((addr) => (
-                  <option key={addr.id} value={addr.id}>
-                    {addr.label || "Address"} - {addr.street_address},{" "}
-                    {addr.city}, {addr.postal_code}, {addr.country}
-                  </option>
-                ))}
-              </select>
-              {errors.addressId && (
-                <p className="text-red-500 text-xs mt-1">{errors.addressId}</p>
-              )}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.lastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                )}
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Street Address
-                </label>
-                <input
-                  type="text"
-                  name="streetAddress"
-                  value={formData.streetAddress}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.streetAddress && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.streetAddress}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  City
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.city && (
-                  <p className="text-red-500 text-xs mt-1">{errors.city}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  State/Province
-                </label>
-                <input
-                  type="text"
-                  name="stateProvince"
-                  value={formData.stateProvince}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.stateProvince && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.stateProvince}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  ZIP/Postal Code
-                </label>
-                <input
-                  type="text"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.postalCode && (
-                  <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Country
-                </label>
-                <input
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B6F47]"
-                />
-                {errors.country && (
-                  <p className="text-red-500 text-xs mt-1">{errors.country}</p>
-                )}
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  name="saveAddress"
-                  className="rounded border-gray-300 text-[#8B6F47] focus:ring-[#8B6F47]"
-                />
-                <span className="ml-2 text-sm text-gray-700">
-                  Save this address for future orders
-                </span>
-              </label>
-            </div>
-          </div>
-          <aside className="bg-white rounded-lg shadow p-6 w-full max-w-sm">
-            <div className="flex items-center mb-4">
-              <i className="fas fa-box text-[#8B6F47] mr-2"></i>
-              <h2 className="text-lg font-semibold text-gray-800">
-                Order Summary
-              </h2>
-            </div>
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-center mb-4">
-                <div>
-                  <p className="text-gray-700">{item.name}</p>
-                  <p className="text-sm text-gray-500">
-                    Color: {item.color || "N/A"} | Qty: {item.quantity}
-                  </p>
-                </div>
-                <span className="text-gray-700">${(item.price * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
-            <hr className="border-gray-200 my-4" />
-            <div className="flex justify-between text-gray-700 mb-2">
-              <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-gray-700 mb-2">
-              <span>Shipping</span>
-              <span>${shipping.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-gray-700 mb-2">
-              <span>Tax</span>
-              <span>${tax.toFixed(2)}</span>
-            </div>
-            <hr className="border-gray-200 my-4" />
-            <div className="flex justify-between font-semibold text-gray-800 mb-4">
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
-            <p className="text-sm text-gray-600">Estimated delivery: 3-5 business days</p>
-          </aside>
-        </div>
-        <div className="mt-6 text-center">
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="w-full max-w-xs bg-[#8B6F47] text-white py-3 rounded-md text-sm font-medium hover:bg-[#D4C7B0] transition"
-          >
-            Continue to Payment
-          </button>
-        </div>
-      </div> */}
-      <main class="max-w-[1200px] mx-auto">
-        <ToastContainer />
-        <nav class="flex items-center space-x-4 text-sm font-normal mb-8 select-none">
-          <div class="flex items-center space-x-2">
-            <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#9c6f3c] text-[#f6f0e0] text-xs">
+        <nav
+          aria-label="Progress"
+          className="flex items-center space-x-4 text-sm font-normal mb-8 select-none"
+        >
+          <div className="flex items-center space-x-2">
+            <div
+              className={`flex items-center justify-center w-7 h-7 rounded-full ${
+                action === "info"
+                  ? "bg-[#9c6f3c] text-[#f6f0e1]"
+                  : "bg-[#f6f0e1] border border-[#7a5a33aa] text-[#7a5a33aa]"
+              } font-normal`}
+            >
               1
             </div>
-            <span>Shipping</span>
+            <span className={action === "info" ? "text-[#3a2e1a]" : "text-[#7a5a33aa]"}>
+              Shipping
+            </span>
           </div>
-          <div class="flex items-center text-[#cfc9b9]">
-            <span class="inline-block w-10 h-[1px] bg-[#cfc9b9]"></span>
+          <div className="flex items-center text-[#7a5a33aa]">
+            <span className="inline-block w-10 h-[1px] bg-[#7a5a33aa]"></span>
           </div>
-          <div class="flex items-center space-x-2 text-[#a08f7a]">
-            <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f6f0e0] border border-[#cfc9b9] text-xs">
+          <div className="flex items-center space-x-2">
+            <div
+              className={`flex items-center justify-center w-7 h-7 rounded-full ${
+                action === "payment"
+                  ? "bg-[#9c6f3c] text-[#f6f0e1]"
+                  : "bg-[#f6f0e1] border border-[#7a5a33aa] text-[#7a5a33aa]"
+              } font-normal`}
+            >
               2
             </div>
-            <span>Payment</span>
+            <span className={action === "payment" ? "text-[#3a2e1a]" : "text-[#7a5a33aa]"}>
+              Payment
+            </span>
           </div>
-          <div class="flex items-center text-[#cfc9b9]">
-            <span class="inline-block w-10 h-[1px] bg-[#cfc9b9]"></span>
+          <div className="flex items-center text-[#7a5a33aa]">
+            <span className="inline-block w-10 h-[1px] bg-[#7a5a33aa]"></span>
           </div>
-          <div class="flex items-center space-x-2 text-[#a08f7a]">
-            <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f6f0e0] border border-[#cfc9b9] text-xs">
+          <div className="flex items-center space-x-2">
+            <div
+              className={`flex items-center justify-center w-7 h-7 rounded-full ${
+                action === "confirmation"
+                  ? "bg-[#9c6f3c] text-[#f6f0e1]"
+                  : "bg-[#f6f0e1] border border-[#7a5a33aa] text-[#7a5a33aa]"
+              } font-normal`}
+            >
               3
             </div>
-            <span>Confirmation</span>
+            <span className={action === "confirmation" ? "text-[#3a2e1a]" : "text-[#7a5a33aa]"}>
+              Confirmation
+            </span>
           </div>
         </nav>
-        <section class="flex flex-col lg:flex-row gap-6">
-          <form
-            aria-label="Shipping Information"
-            class="flex-1 bg-[#f3ebd9] rounded-md border border-[#cfc9b9] p-6 space-y-6"
-          >
-            <h2 class="flex items-center gap-2 font-semibold text-[#3a2f1a] mb-4">
-              <i class="fas fa-map-marker-alt text-[#7a5a33]"></i>
-              Shipping Information
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  class="block text-xs text-[#7a5a33] mb-1"
-                  for="firstName"
-                >
-                  First Name
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-                {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="lastName">
-                  Last Name
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-                {errors.lastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="email">
-                  Email Address
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="phone">
-                  Phone Number
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                )}
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-xs text-[#7a5a33] mb-1" for="street">
-                  Street Address
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="streetAddress"
-                  value={formData.streetAddress}
-                  onChange={handleChange}
-                />
-                {errors.streetAddress && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.streetAddress}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="city">
-                  City
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                />
-                {errors.city && (
-                  <p className="text-red-500 text-xs mt-1">{errors.city}</p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="state">
-                  State/Province
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="stateProvince"
-                  value={formData.stateProvince}
-                  onChange={handleChange}
-                />
-                {errors.stateProvince && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.stateProvince}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="zip">
-                  ZIP/Postal Code
-                </label>
-                <input
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] placeholder:text-[#a08f7a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                  type="text"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                />
-                {errors.postalCode && (
-                  <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
-                )}
-              </div>
-              <div>
-                <label class="block text-xs text-[#7a5a33] mb-1" for="country">
-                  Country
-                </label>
-                <input
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  class="w-full rounded-md border border-transparent bg-[#f6f0e0] px-3 py-2 text-sm text-[#3a2f1a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
-                />
-                {errors.country && (
-                  <p className="text-red-500 text-xs mt-1">{errors.country}</p>
-                )}
-               
+        <section className="flex flex-col lg:flex-row gap-6">
+          {action === "confirmation" ? (
+            <div className="flex-1 bg-[#f6f0e1] border border-[#c9bda9] rounded-md p-6 text-center">
+              <div className="checkmark mb-6"></div>
+              <h2 className="text-2xl font-normal text-[#3a2e1a] mb-4">
+                Thank You for Your Order!
+              </h2>
+              <p className="text-sm text-[#7a5a33cc] mb-6">
+                Your order has been successfully placed. You'll receive a confirmation email soon.
+              </p>
+              <div className="text-left max-w-5xl mx-auto">
+                <h3 className="text-lg font-normal text-[#3a2e1a] mb-4">Order Details</h3>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-[#3a2e1a]">Order ID</p>
+                    <p className="text-sm text-[#7a5a33cc]">{orderDetails.orderId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#3a2e1a]">Items</p>
+                    {orderDetails.items.map((item) => (
+                      <div key={item.id} className="flex gap-4 mt-2">
+                        <img
+                          alt={`${item.name} product image`}
+                          className="w-[60px] h-[60px] object-cover rounded"
+                          height="60"
+                          src={`http://127.0.0.1:8000${item.image}`}
+                          width="60"
+                        />
+                        <div className="flex-1 text-xs">
+                          <p className="font-semibold text-[#3a2e1a] mb-1">{item.name}</p>
+                          <p className="text-[#7a5a33cc] mb-0.5">
+                            Qty: <span className="font-semibold text-[#3a2e1a]">{item.quantity}</span>
+                          </p>
+                          <p className="text-[#7a5a33cc]">
+                            Price: <span className="font-semibold text-[#3a2e1a]">${(item.price * item.quantity).toFixed(2)}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#3a2e1a]">Shipping Address</p>
+                    <p className="text-sm text-[#7a5a33cc]">
+                      {orderDetails.shippingAddress.street}, {orderDetails.shippingAddress.city}, {orderDetails.shippingAddress.postalCode}, {orderDetails.shippingAddress.country}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#3a2e1a]">Payment Method</p>
+                    <p className="text-sm text-[#7a5a33cc]">{orderDetails.paymentMethod}</p>
+                  </div>
+                  <div className="text-sm space-y-2">
+                    <div className="flex justify-between text-[#7a5a33cc]">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-[#7a5a33cc]">
+                      <span>Shipping</span>
+                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.shipping.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-[#7a5a33cc]">
+                      <span>Tax</span>
+                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-[#3a2e1a]">
+                      <span>Total</span>
+                      <span>${orderDetails.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="flex justify-end">
+                  <Link
+                    to="/shop"
+                    className="inline-block bg-[#9c6f3c] text-[#f6f0e1] px-5 py-2 rounded-md text-sm font-normal hover:bg-[#7a5a33] transition-colors mt-6"
+                  >
+                    Continue Shopping
+                  </Link>
+                </span>
               </div>
             </div>
-            <label
-              class="flex items-center gap-3 bg-[#f3ebd9] border border-[#cfc9b9] rounded-md px-4 py-3 text-xs cursor-pointer select-none"
-              for="saveAddress"
+          ) : (
+            <form
+              aria-labelledby="shipping-info"
+              className="flex-1 bg-[#f6f0e1] border border-[#c9bda9] rounded-md p-6 space-y-6"
+              onSubmit={handleSubmit}
             >
-              <input
-                class="w-4 h-4 rounded border-[#cfc9b9] text-[#9c6f3c] focus:ring-[#9c6f3c]"
-                id="saveAddress"
-                type="checkbox"
-              />
-              Save this address for future orders
-            </label>
-            <div class="flex justify-end">
-              <button
-                class="bg-[#9c6f3c] text-[#f6f0e0] rounded-md px-5 py-2 text-sm font-normal hover:bg-[#7a5a33] transition-colors"
-                type="submit"
-              >
-                Continue to Payment
-              </button>
-            </div>
-          </form>
-          <aside
-            aria-label="Order Summary"
-            class="w-full max-w-[360px] bg-[#f3ebd9] rounded-md border border-[#cfc9b9] p-6 flex flex-col"
-          >
-            <h2 class="flex items-center gap-2 font-semibold text-[#3a2f1a] mb-4">
-              <i class="fas fa-cube text-[#7a5a33]"></i>
-              Order Summary
-            </h2>
-            <div class="space-y-4 mb-4">
-              <div class="flex gap-4">
-                <img
-                  alt="Hand-Crafted Ceramic Mug product image showing two ceramic mugs with terracotta color"
-                  class="w-[60px] h-[60px] object-cover rounded"
-                  height="60"
-                  loading="lazy"
-                  src="https://storage.googleapis.com/a1aa/image/3cea772c-355d-4d71-7c10-34900ff52ee4.jpg"
-                  width="60"
-                />
-                <div class="flex flex-col text-xs text-[#3a2f1a]">
-                  <span class="font-semibold text-sm">
-                    Hand-Crafted Ceramic Mug
-                  </span>
-                  <span>Color: Terracotta</span>
-                  <span>
-                    Qty:
-                    <span class="font-semibold">2</span>
-                  </span>
+              {action === "info" ? (
+                <div className="space-y-5">
+                  <h2
+                    className="flex items-center gap-2 font-normal text-[#3a2e1a]"
+                    id="shipping-info"
+                  >
+                    <i className="fas fa-map-marker-alt text-[#7a5a33]"></i>
+                    Shipping Information
+                  </h2>
+                  <div className="mb-4">
+                    <label className="block text-xs text-[#7a5a33cc] mb-1 font-normal">
+                      Select Saved Address
+                    </label>
+                    <select
+                      value={selectedAddressId || ""}
+                      onChange={handleAddressChange}
+                      className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                    >
+                      <option value="">Select an address</option>
+                      {addresses.map((addr) => (
+                        <option key={addr.id} value={addr.id}>
+                          {addr.address_type}, {addr.city}, {addr.postal_code}, {addr.country}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.addressId && (
+                      <p className="text-red-500 text-xs mt-1">{errors.addressId}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="firstName"
+                      >
+                        First Name
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="firstName"
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                      />
+                      {errors.firstName && (
+                        <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="lastName"
+                      >
+                        Last Name
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="lastName"
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                      />
+                      {errors.lastName && (
+                        <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="email"
+                      >
+                        Email Address
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                      />
+                      {errors.email && (
+                        <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="phone"
+                      >
+                        Phone Number
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="phone"
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                      />
+                      {errors.phone && (
+                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                      htmlFor="street"
+                    >
+                      Street Address
+                    </label>
+                    <input
+                      className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                      id="street"
+                      type="text"
+                      name="street"
+                      value={formData.street}
+                      onChange={handleChange}
+                    />
+                    {errors.street && (
+                      <p className="text-red-500 text-xs mt-1">{errors.street}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="city"
+                      >
+                        City
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="city"
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                      />
+                      {errors.city && (
+                        <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="postalCode"
+                      >
+                        ZIP/Postal Code
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="postalCode"
+                        type="text"
+                        name="postalCode"
+                        value={formData.postalCode}
+                        onChange={handleChange}
+                      />
+                      {errors.postalCode && (
+                        <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="country"
+                      >
+                        Country
+                      </label>
+                      <select
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="country"
+                        name="country"
+                        value={formData.country}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select a country</option>
+                        <option value="Morocco">Morocco</option>
+                        <option value="Europe">Europe</option>
+                        {/* Add more countries as needed */}
+                      </select>
+                      {errors.country && (
+                        <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="border border-[#c9bda9] rounded-md p-3 flex items-center gap-3 text-xs text-[#3a2e1a]">
+                    <input
+                      className="w-4 h-4 rounded border-[#7a5a33cc] text-[#7a5a33]"
+                      id="saveAddress"
+                      type="checkbox"
+                      name="saveAddress"
+                      checked={formData.saveAddress}
+                      onChange={handleChange}
+                    />
+                    <label className="cursor-pointer" htmlFor="saveAddress">
+                      Save this address for future orders
+                    </label>
+                  </div>
                 </div>
-                <div class="ml-auto font-semibold text-sm flex items-center">
-                  $49.98
+              ) : (
+                <div>
+                  <h2
+                    className="flex items-center gap-2 font-normal text-[#3a2e1a] mt-4"
+                    id="payment-info"
+                  >
+                    <i className="fas fa-credit-card text-[#7a5a33]"></i>
+                    Payment Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div className="md:col-span-2">
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="cardNumber"
+                      >
+                        Card Number
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="cardNumber"
+                        type="text"
+                        name="cardNumber"
+                        value={formData.cardNumber}
+                        onChange={handleChange}
+                      />
+                      {errors.cardNumber && (
+                        <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="expiryDate"
+                      >
+                        Expiry Date (MM/YY)
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="expiryDate"
+                        type="text"
+                        name="expiryDate"
+                        value={formData.expiryDate}
+                        onChange={handleChange}
+                      />
+                      {errors.expiryDate && (
+                        <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        className="block text-xs text-[#7a5a33cc] mb-1 font-normal"
+                        htmlFor="cvv"
+                      >
+                        CVV
+                      </label>
+                      <input
+                        className="w-full rounded-md border border-transparent bg-[#f6f0e1] px-3 py-2 text-sm text-[#3a2e1a] placeholder-[#7a5a33aa] focus:outline-none focus:ring-1 focus:ring-[#9c6f3c]"
+                        id="cvv"
+                        type="text"
+                        name="cvv"
+                        value={formData.cvv}
+                        onChange={handleChange}
+                      />
+                      {errors.cvv && (
+                        <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className={`flex ${action === "info" ? "justify-end" : "justify-between"}`}>
+                {action === "payment" && (
+                  <button
+                    type="button"
+                    className="bg-[#7a5a33] text-[#f6f0e1] px-5 py-2 rounded-md text-sm font-normal hover:bg-[#9c6f3c] transition-colors"
+                    onClick={() => setAction("info")}
+                  >
+                    Back to Shipping
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="bg-[#9c6f3c] text-[#f6f0e1] px-5 py-2 rounded-md text-sm font-normal hover:bg-[#7a5a33] transition-colors flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  {isLoading && action === "payment" ? (
+                    <>
+                      <span className="spinner"></span>
+                      Placing Order...
+                    </>
+                  ) : action === "info" ? (
+                    "Continue to Payment"
+                  ) : (
+                    "Place Order"
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+          {action !== "confirmation" ? (
+            <aside
+              aria-label="Order Summary"
+              className="w-full max-w-sm bg-[#f6f0e1] border border-[#c9bda9] rounded-md p-6 text-[#3a2e1a]"
+            >
+              <h2 className="flex items-center gap-2 font-normal mb-4 text-[#3a2e1a]">
+                <i className="fas fa-box-open text-[#7a5a33]"></i>
+                Order Summary
+              </h2>
+              <div className="space-y-4 mb-4 border-b border-[#c9bda9] pb-4">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex gap-4">
+                    <img
+                      alt={`${item.name} product image`}
+                      className="w-[60px] h-[60px] object-cover rounded"
+                      height="60"
+                      src={`http://127.0.0.1:8000${item.image}`}
+                      width="60"
+                    />
+                    <div className="flex-1 text-xs">
+                      <p className="font-semibold text-[#3a2e1a] mb-1">{item.name}</p>
+                      <p className="text-[#7a5a33cc] mb-0.5">
+                        Qty: <span className="font-semibold text-[#3a2e1a]">{item.quantity}</span>
+                      </p>
+                    </div>
+                    <p className="font-semibold text-[#3a2e1a] self-center">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs space-y-2 mb-4 border-b border-[#c9bda9] pb-4">
+                <div className="flex justify-between text-[#7a5a33cc]">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-[#3a2e1a]">${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-[#7a5a33cc]">
+                  <span>Shipping</span>
+                  <span className="font-semibold text-[#3a2e1a]">${shipping.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-[#7a5a33cc]">
+                  <span>Tax</span>
+                  <span className="font-semibold text-[#3a2e1a]">${tax.toFixed(2)}</span>
                 </div>
               </div>
-              <div class="flex gap-4">
-                <img
-                  alt="Artisan Coffee Mug product image showing a beige coffee mug on a beige background"
-                  class="w-[60px] h-[60px] object-cover rounded"
-                  height="60"
-                  loading="lazy"
-                  src="https://storage.googleapis.com/a1aa/image/fad3fecf-9a01-4994-eec1-d1d68aec944f.jpg"
-                  width="60"
-                />
-                <div class="flex flex-col text-xs text-[#3a2f1a]">
-                  <span class="font-semibold text-sm">Artisan Coffee Mug</span>
-                  <span>Color: Beige</span>
-                  <span>
-                    Qty:
-                    <span class="font-semibold">1</span>
-                  </span>
-                </div>
-                <div class="ml-auto font-semibold text-sm flex items-center">
-                  $19.99
+              <div className="text-xs space-y-2 mb-4 border-b border-[#c9bda9] pb-4">
+                <div className="flex justify-between font-semibold text-[#3a2e1a]">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
                 </div>
               </div>
-            </div>
-            <hr class="border-[#cfc9b9] mb-4" />
-            <div class="flex justify-between text-sm text-[#7a5a33] mb-1">
-              <span>Subtotal</span>
-              <span class="font-semibold">$69.97</span>
-            </div>
-            <div class="flex justify-between text-sm text-[#7a5a33] mb-1">
-              <span>Shipping</span>
-              <span class="font-semibold">$4.99</span>
-            </div>
-            <div class="flex justify-between text-sm text-[#7a5a33] mb-4">
-              <span>Tax</span>
-              <span class="font-semibold">$5.60</span>
-            </div>
-            <hr class="border-[#cfc9b9] mb-4" />
-            <div class="flex justify-between font-semibold text-sm text-[#3a2f1a] mb-4">
-              <span>Total</span>
-              <span>$80.56</span>
-            </div>
-            <hr class="border-[#cfc9b9] mb-4" />
-            <div class="flex justify-between font-semibold text-sm text-[#3a2f1a] mb-4">
-              <span>Total</span>
-              <span>$80.56</span>
-            </div>
-            <p class="text-xs text-[#7a5a33]">
-              Estimated delivery: 3-5 business days
-            </p>
-          </aside>
+              <p className="text-xs text-[#7a5a33cc]">
+                Estimated delivery: 3-5 business days
+              </p>
+            </aside>
+          ) : (
+            ""
+          )}
         </section>
       </main>
     </div>

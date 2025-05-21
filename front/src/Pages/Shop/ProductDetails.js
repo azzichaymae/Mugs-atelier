@@ -4,7 +4,7 @@ import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import "./Product.css";
 const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
@@ -13,6 +13,8 @@ const ProductDetails = () => {
   const [avgRating, setAvgRating] = useState("");
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleQuantityChange = (event) => {
     setQuantity(event.target.value);
@@ -103,6 +105,30 @@ const ProductDetails = () => {
   if (!product) {
     return <div>Loading...</div>;
   }
+
+  const handleAddToCart = async () => {
+    setIsLoading(true);
+    setIsSuccess(false);
+    const arrow = document.querySelector(".arrow");
+    arrow.classList.add("hidden");
+     
+    setTimeout(() => {
+      try {
+        setIsSuccess(true);
+        addToCart(product, quantity);
+        setTimeout(() => {
+          setIsSuccess(false);
+          arrow.classList.remove("hidden");
+         
+        }, 1500);
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("An error occurred.", { autoClose: 1500 });
+      } finally {
+        setIsLoading(false);
+      }
+    }, 1800);
+  };
   return (
     <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
       <nav className="flex space-x-6 text-sm font-normal text-gray-500 mb-6">
@@ -234,14 +260,26 @@ const ProductDetails = () => {
               </div>
               <div className="flex items-center justify-center w-full">
                 <button
-                  onClick={() => addToCart(product, quantity)}
+                  onClick={handleAddToCart}
                   aria-label="Add to cart"
-                  className="flex items-center justify-center space-x-2 bg-[#d9c099] hover:bg-[#977C54] text-white text-s font-semibold rounded px-4 py-2 w-100"
-                >
-                  <i className="fas fa-shopping-cart"></i>
-                  <span>Add to cart</span>
+                  id="add-to-cart"
+                  
+className="w-100 flex items-center justify-center space-x-2 bg-[#977C54] text-white font-bold rounded-50 px-5 py-2 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#B78C14] disabled:bg-[#977C54] disabled:hover:bg-[#977C54] disabled:shadow-none disabled:opacity-60 disabled:cursor-not-allowed relative group"                >
+                  <i className="fas fa-shopping-cart text-2xl drop-shadow-md"></i>
+                  <span className="text-md">Add to Cart</span>
+
+                  <span className="arrow absolute right-4   group-hover:opacity-100 transition-opacity duration-200 text-xxl">
+                    <i class="fas fa-solid fa-arrow-right"></i>
+                  </span>
+
+                  {isLoading && (
+                    <i className="fas fa-spinner fa-spin absolute right-4 text-xl"></i>
+                  )}
+                  {isSuccess && !isLoading && (
+                    <i className="fas fa-check absolute right-4 text-xl text-white-500"></i>
+                  )}
                 </button>
-                <i className="far fa-heart ml-2 transition-colors duration-200 hover:text-red-500"></i>
+                <i className="far fa-heart ml-2 text-xl transition-colors duration-200 hover:text-red-500"></i>
               </div>
               <div>
                 <h3 className="text-sm font-semibold mt-3 mb-1">Delivery</h3>

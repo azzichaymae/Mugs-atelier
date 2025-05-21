@@ -1,45 +1,13 @@
-.product-details {
-     max-width: 600px;
-     margin: auto;
-     padding: 20px;
-     border: 1px solid #ccc;
-     border-radius: 5px;
-   }
+button.relative {
+  position: relative;
+}
+span.absolute {
+  position: absolute;
    
-   .image-gallery img {
-     width: 100%;
-     height: auto;
-     margin-bottom: 10px;
-   }
-   
-   .price {
-     font-size: 24px;
-     margin: 10px 0;
-   }
-   
-   .original-price {
-     text-decoration: line-through;
-     color: red;
-     margin-left: 10px;
-   }
-   
-   h2 {
-     margin-top: 20px;
-   }
-   
-   .quantity {
-     margin: 20px 0;
-   }
-   
-   button {
-     padding: 10px 20px;
-     background-color: #28a745;
-     color: white;
-     border: none;
-     border-radius: 5px;
-     cursor: pointer;
-   }
-   
-   button:hover {
-     background-color: #218838;
-   }
+ 
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+button.group:hover span {
+  opacity: 1;
+}

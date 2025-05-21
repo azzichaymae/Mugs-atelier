@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate ,useLocation} from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Login.css";
+import RegisterForm from "./RegisterForm";
+import LoginForm from "./LoginForm";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = new URLSearchParams(window.location.search).get("redirect") || "/shop";  const [name, setName] = useState("");
+  const redirectTo = queryParams.get("redirect") || "/";
+
+
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [emailRegister, setEmailRegister] = useState("");
   const [password, setPassword] = useState("");
@@ -20,40 +25,7 @@ const Login = () => {
   const [errorConfirmPassword, setErrorConfirmPassword] = useState("");
   const [errorEmailSignup, setErrorEmailSignup] = useState("");
   const [errorPasswordSignup, setErrorPasswordSignup] = useState("");
-
-  useEffect(() => {
-    const signup = document.querySelector(".signup");
-    const login = document.querySelector(".login");
-    const slider = document.querySelector(".slider");
-    const formSection = document.querySelector(".form-section");
-
-    if (!signup || !login || !slider || !formSection) {
-      console.error("One or more elements not found!");
-      return;
-    }
-
-    signup.addEventListener("click", () => {
-      slider.classList.add("moveslider");
-      formSection.classList.add("form-section-move");
-    });
-
-    login.addEventListener("click", () => {
-      slider.classList.remove("moveslider");
-      formSection.classList.remove("form-section-move");
-    });
-
-    return () => {
-      signup.removeEventListener("click", () => {
-        slider.classList.add("moveslider");
-        formSection.classList.add("form-section-move");
-      });
-
-      login.removeEventListener("click", () => {
-        slider.classList.remove("moveslider");
-        formSection.classList.remove("form-section-move");
-      });
-    };
-  }, []);
+  const [action, setAction] = useState("login");
 
   // Function to handle login
   const handleLogin = async (event) => {
@@ -82,13 +54,12 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
   
-      // Parse the JSON response
       const data = await response.json();
   
       if (response.ok) {
         localStorage.setItem("user_id", data.user.id);
         alert("Login successful!");
-        navigate(redirectUrl);
+        navigate(redirectTo);
       } else {
         setErrorLog(data.error || "Login failed");
       }
@@ -100,14 +71,12 @@ const Login = () => {
   const validateInputs = () => {
     let hasErrors = false;
 
-    // Reset all errors
     setErrorName('');
     setErrorEmailSignup('');
     setErrorPasswordSignup('');
     setErrorConfirmPassword('');
     setErrorRegister('');
 
-    // Name validation
     if (!name) {
       setErrorName('Name is required.');
       hasErrors = true;
@@ -116,7 +85,6 @@ const Login = () => {
       hasErrors = true;
     }
 
-    // Email validation
     if (!emailRegister) {
       setErrorEmailSignup('Email is required.');
       hasErrors = true;
@@ -125,7 +93,6 @@ const Login = () => {
       hasErrors = true;
     }
 
-    // Password validation
     if (!passwordSignup) {
       setErrorPasswordSignup('Password is required.');
       hasErrors = true;
@@ -134,26 +101,17 @@ const Login = () => {
       hasErrors = true;
     }
 
-    // Confirm password validation
     if (!confirmPassword) {
       setErrorConfirmPassword('Please confirm your password.');
       hasErrors = true;
-    } else if (confirmPassword != passwordSignup) {
-  setErrorConfirmPassword('Passwords do not match.');
-  console.log(confirmPassword)
-  console.log(passwordSignup)
+    } else if (confirmPassword !== passwordSignup) {
+      setErrorConfirmPassword('Passwords do not match.');
       hasErrors = true;
     }
 
     return !hasErrors;
   };
 
-  // Handle input changes for real-time validation
-  const handleInputChange = () => {
-    validateInputs();
-  };
-
-  // Handle signup button click
   const handleRegister = async () => {
     const isValid = validateInputs();
     if (isValid) {
@@ -161,16 +119,14 @@ const Login = () => {
         const response = await fetch("http://127.0.0.1:8000/register/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ emailRegister, passwordSignup, name }),
+          body: JSON.stringify({ emailRegister: emailRegister, passwordSignup: passwordSignup, name }),
         });
   
         const data = await response.json();
-        console.log(data);
   
         if (response.ok) {
-          
           alert("Register successful!");
-          window.location.href = "/login";
+          setAction("login")
         } else {
           setErrorRegister(data.error || "Register failed");
         }
@@ -181,98 +137,106 @@ const Login = () => {
       setErrorRegister('Please fix the errors above to sign up.');
     }
   };
+
   return (
-    <div className="row rowDiv p-5">
-      <div className="container col-7">
-        <div className="slider"></div>
-        <div className="btn btn-grp">
-          <button className="login">Login</button>
-          <button className="signup">Signup</button>
+    <div className="bg-white">
+      <div className="min-h-screen flex flex-col md:flex-row">
+        <div className="md:w-1/2 w-full">
+          <img
+            alt="Beige background with large text MUGS' ATELIER and a brown ceramic coffee cup on a wooden coaster with steam rising"
+            className="object-cover w-full h-full"
+            height="1000"
+            src="./bg.jpg"
+            width="800"
+          />
         </div>
-
-        <div className="form-section">
-          {/* Login Form */}
-          <div className="login-box">
-            <input
-              type="email"
-              className="email ele rounded"
-              placeholder="youremail@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <span className="error-message">{errorEmail}</span>
-            <input
-              type="password"
-              className="password ele rounded"
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <span className="error-message">{errorPassword}</span>
-            <div className="d-flex justify-content-center">
-              <button className="clkbtn" onClick={handleLogin}>
-                Login
-              </button>
+        <div className="md:w-1/2 w-full flex items-center justify-center mt-2">
+          <div className="w-full max-w-lg">
+            <div className="flex flex-col items-center mb-4">
+              <div className="bg-[#E6D9C8] rounded-full p-4 mb-2">
+                <i className="fas fa-coffee text-[#6B3E1A] text-xl"></i>
+              </div>
+              <h1 className="text-[#6B3E1A] font-semibold text-xl">
+                Mugs' Atelier
+              </h1>
+              <p className="text-[#6B3E1A] text-sm mt-1">
+                Handcrafted, personalized mugs that tell your story
+              </p>
             </div>
+            <div className="border border-[#E6D9C8] rounded-lg p-6 space-y-6 text-[#6B3E1A] min-h-[580px]">
+              <div>
+                <h2 className="font-semibold text-lg mb-1 text-center">
+                  {action === 'login' ? 'Welcome Back' : 'Create Account'}
+                </h2>
+                <p className="text-center text-sm mb-4">
+                  {action === 'login'
+                    ? 'Sign in to your account to continue'
+                    : 'Join us to discover handcrafted mugs for every occasion'}
+                </p>
+              </div>
+              <div className="flex rounded-md overflow-hidden border border-[#C49A6C] mb-4">
+                <button
+                  className={`flex-1 ${
+                    action === 'login'
+                      ? 'bg-[#A67C52] text-white'
+                      : 'bg-[#E6E4E1] text-[#6B3E1A]'
+                  } py-2 text-center text-sm font-normal`}
+                  type="button"
+                  onClick={() => setAction('login')}
+                >
+                  Sign In
+                </button>
+                <button
+                  className={`flex-1 ${
+                    action === 'login'
+                      ? 'bg-[#E6E4E1] text-[#6B3E1A]'
+                      : 'bg-[#A67C52] text-white'
+                  } py-2 text-center text-sm font-normal`}
+                  type="button"
+                  onClick={() => setAction('register')}
+                >
+                  Register
+                </button>
+                
+              </div>
+              {action === 'login' ? (
+                <LoginForm
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  errorLog={errorLog}
+                  errorEmail={errorEmail}
+                  errorPassword={errorPassword}
+                  handleLogin={handleLogin}
+                  action={action}
+                  setAction={setAction}
 
-            {errorLog && <span className="error-message text-center">{errorLog}</span>}
+                />
+              ) : (
+                <RegisterForm
+                  name={name}
+                  setName={setName}
+                  emailRegister={emailRegister}
+                  setEmailRegister={setEmailRegister}
+                  passwordSignup={passwordSignup}
+                  setPasswordSignup={setPasswordSignup}
+                  confirmPassword={confirmPassword}
+                  setConfirmPassword={setConfirmPassword}
+                  errorRegister={errorRegister}
+                  errorName={errorName}
+                  errorEmailSignup={errorEmailSignup}
+                  errorPasswordSignup={errorPasswordSignup}
+                  errorConfirmPassword={errorConfirmPassword}
+                  handleRegister={handleRegister}
+                   action={action}
+                  setAction={setAction}
+                />
+              )}
+            </div>
           </div>
-          {/* Signup Form */}
-          <div className="signup-box">
-      <input
-        type="text"
-        className="name ele rounded"
-        placeholder="Enter your name"
-        value={name}
-        onChange={(e) => {
-          setName(e.target.value);
-          handleInputChange();
-        }}
-      />
-      <span className="error-message">{errorName}</span>
-      <input
-        type="email"
-        className="email ele rounded"
-        placeholder="youremail@email.com"
-        value={emailRegister}
-        onChange={(e) => {
-          setEmailRegister(e.target.value);
-          handleInputChange();
-        }}
-      />
-      <span className="error-message">{errorEmailSignup}</span>
-      <input
-        type="password"
-        className="password ele rounded"
-        placeholder="password"
-        value={passwordSignup}
-        onChange={(e) => {
-          setPasswordSignup(e.target.value);
-          handleInputChange();
-        }}
-      />
-      <span className="error-message">{errorPasswordSignup}</span>
-      <input
-        type="password"
-        className="password ele rounded"
-        placeholder="Confirm password"
-        value={confirmPassword}
-        onChange={(e) => {
-          setConfirmPassword(e.target.value);
-          handleInputChange();
-        }}
-      />
-      <span className="error-message">{errorConfirmPassword}</span>
-      <div className="d-flex justify-content-center">
-        <button className="clkbtn" onClick={handleRegister}>
-          Signup
-        </button>
-      </div>
-      <span className="error-message text-center">{errorRegister}</span>
-    </div>
         </div>
       </div>
-      <div className="col-5 d-flex align-items-center justify-content-center pb-5"></div>
     </div>
   );
 };

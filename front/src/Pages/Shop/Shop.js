@@ -16,7 +16,10 @@ const ProductListing = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [maxPrice, setMaxPrice] = useState(40);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // State for current page
+  const productsPerPage = 6; // Number of products per page
 
+  // Filter products
   const filteredProducts = products
     .filter((product) => {
       if (selectedCategory === "All") return true;
@@ -29,6 +32,12 @@ const ProductListing = () => {
         product.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
   const navigate = useNavigate();
   const detailsProd = (e, id) => {
     e.preventDefault();
@@ -36,9 +45,14 @@ const ProductListing = () => {
   };
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo(0, 0); // Scroll to top on page change
+  };
+
   return (
-    <div class="bg-[#f5f2ed]">
-      {/* Adjusted margin to reduce space */}
+    <div className="bg-[#f5f2ed]">
       <nav className="flex text-sm font-normal text-gray-500 px-4 py-4 mb-2">
         <Link to="/" className="hover:text-gray-700 m-0 p-0">
           <i className="fa fa-solid fa-house"></i>{" "}
@@ -49,61 +63,98 @@ const ProductListing = () => {
           Shop
         </Link>
       </nav>
-      <div className="containerShop px-5 ">
+      <div className="containerShop px-5">
         <ToastContainer />
         <div className="filter-container">
-          {/* Filter Icon for smaller screens */}
-          <div
-            className="filter-icon"
+          <button
+            className="filter-icon md:hidden w-full text-[#6b5e4a] py-2 px-4 rounded-lg flex items-center justify-center gap-2"
             onClick={() => setIsFilterVisible(!isFilterVisible)}
           >
-            <span role="img" aria-label="filter">
-              <i className="fa fa-solid fa-filter"></i>
-            </span>{" "}
-          </div>
+            {isFilterVisible ? (
+              <>
+                <span className="text-lg mr-1">✖</span>
+                <span>Close Filters</span>
+              </>
+            ) : (
+              <>
+                <span className="text-lg mr-1">≡</span>
+                <span>Show Filters</span>
+              </>
+            )}
+          </button>
 
-          {/* Filter Aside Component */}
-          <aside className={`filter ${isFilterVisible ? "visible" : ""}`}>
-            <h5>Filters</h5>
+          <aside
+            className={`filterDiv w-full md:w-64 bg-[#fcfaf5] rounded-lg p-4 flex flex-col gap-6 select-none ${
+              isFilterVisible ? "visible" : ""
+            }`}
+          >
             <input
-              type="text"
-              placeholder="🔍 Search mugs..."
+              className="w-full rounded-md border border-[#f0e9df] bg-[#fcfaf5] px-3 py-2 text-sm text-[#6b5e4a] placeholder-[#6b5e4a] focus:outline-none focus:ring-1 focus:ring-[#6b5e4a]"
+              placeholder="Search mugs..."
+              type="search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <h6>Category</h6>
-            <ul>
-              <li
-                key="All"
-                className={selectedCategory === "All" ? "active" : ""}
-                onClick={() => setSelectedCategory("All")}
-              >
-                All
-              </li>
-              {categories.map((cat) => (
-                <li
-                  key={cat.id}
-                  className={selectedCategory === cat.name ? "active" : ""}
-                  onClick={() => setSelectedCategory(cat.name)}
-                >
-                  {cat.name}
+            <div>
+              <h2 className="font-semibold text-sm mb-2 text-[#1a1a1a]">
+                Category
+              </h2>
+              <ul className="flex flex-col gap-2 text-[#1a1a1a] text-sm font-normal max-h-64 overflow-y-auto">
+                <li>
+                  <button
+                    className={`rounded-md px-3 py-1 w-full text-left font-normal text-[#6b5e4a] ${
+                      selectedCategory === "All"
+                        ? "bg-[#f0e9df]"
+                        : "hover:underline"
+                    }`}
+                    type="button"
+                    onClick={() => setSelectedCategory("All")}
+                  >
+                    All
+                  </button>
                 </li>
-              ))}
-            </ul>
-            <h6 className="pt-3">Max Price: ${maxPrice}</h6>
-            <input
-              type="range"
-              min="5"
-              max="40"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-            />
+                {categories.map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      className={`rounded-md px-3 py-1 w-full text-left font-normal text-[#6b5e4a] ${
+                        selectedCategory === cat.name
+                          ? "bg-[#f0e9df]"
+                          : "hover:underline"
+                      }`}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.name)}
+                    >
+                      {cat.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm mb-2 text-[#1a1a1a] flex justify-between">
+                <span>Max Price</span>
+                <span className="font-normal">${maxPrice}</span>
+              </h2>
+              <input
+                aria-label="Max Price Range"
+                className="w-full accent-[#6b5e4a]"
+                max="100"
+                min="0"
+                type="range"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+              />
+              <div className="flex justify-between text-xs text-[#a89f8f] mt-1 select-none">
+                <span>$0</span>
+                <span>$100</span>
+              </div>
+            </div>
           </aside>
         </div>
 
-        <main className="products px-5">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+        <main className="products px-5 flex flex-col items-start gap-4">
+          {paginatedProducts.length > 0 ? (
+            paginatedProducts.map((product) => (
               <div
                 key={product.id}
                 className="product-card"
@@ -111,7 +162,6 @@ const ProductListing = () => {
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  minHeight: "300px",
                 }}
               >
                 <div>
@@ -124,7 +174,7 @@ const ProductListing = () => {
                   </div>
                   <h4>{product.name}</h4>
                 </div>
-                <span className="mt-2">
+                <span className="mt-2 d-flex justify-content-between align-items-center">
                   <p>${product.price}</p>
                   <button className="btn btn-sm">
                     <svg
@@ -226,8 +276,45 @@ const ProductListing = () => {
           ) : (
             <p className="no-results">No products found</p>
           )}
+
+          {/* Pagination Controls */}
+         
         </main>
+        
       </div>
+       {totalPages > 1 && (
+            <div className="pagination flex justify-center items-center gap-2 mt-6">
+              <button
+                className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index + 1}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === index + 1
+                      ? "bg-[#6b5e4a] text-white"
+                      : "bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf]"
+                  }`}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              <button
+                className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
     </div>
   );
 };

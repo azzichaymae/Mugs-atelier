@@ -39,8 +39,16 @@ export const CartProvider = ({ children }) => {
       // Log the new cart state immediately after updating
       
       return newCart;
+      
     });
-     toast.success("Product added successfully!");
+     toast.success("Product added successfully!", {
+              position: "top-center",
+              autoClose: 1000,
+              hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+            });
+     
   };
   const updateQuantity = (id, newQuantity) => {
     setCart((prevCart) =>

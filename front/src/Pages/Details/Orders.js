@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -14,22 +15,24 @@ const Orders = () => {
   };
 
   const deleteOrder = async (orderId, orderStatus) => {
-    if (orderStatus !== "Delivered") {
-      alert("You can only delete delivered orders.");
-      return;
-    }
 
     if (window.confirm("Are you sure you want to delete this order?")) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/orders/${orderId}/`,
+          `http://127.0.0.1:8000/orders/${orderId}/delete`,
           {
             method: "DELETE",
           }
         );
 
         if (response.ok) {
-          alert("Order deleted successfully!");
+           toast.success("Order deleted successfully.", {
+                 position: "top-center",
+              autoClose: 1500,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+                });
           setOrders((prevOrders) =>
             prevOrders.filter((order) => order.order_id !== orderId)
           );
@@ -121,7 +124,7 @@ const Orders = () => {
                           ? "opacity-50 cursor-not-allowed"
                           : ""
                       }`}
-                      onClick={() => deleteOrder(order.order_id)}
+                      onClick={() => deleteOrder(order.order_id,order.status)}
                       disabled={order.status !== "Delivered"}
                     >
                       <i className="fas fa-trash"></i>

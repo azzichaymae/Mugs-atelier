@@ -1,0 +1,41 @@
+/* Override Django admin header colors */
+#branding h1 {
+    background-color: #f5d76e; /* Gold background for the header */
+    color: #2c3e50; /* Dark text for contrast */
+    padding: 10px;
+}
+
+/* Override the top navigation bar */
+#header {
+    background-color: #2c3e50; /* Dark blue background */
+    color: #f5d76e; /* Gold text */
+}
+
+/* Override link colors */
+a:link, a:visited {
+    color: #d47f00; /* Orange for links */
+}
+
+/* Override button colors */
+.button, input[type=submit], input[type=button], .submit-row input {
+    background-color: #d47f00; /* Orange buttons */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background-color: #e89b00; /* Slightly lighter orange on hover */
+}
+
+/* Override section headings */
+.module h2, .module caption, .inline-group h2 {
+    background-color: #2c3e50; /* Dark blue for section headers */
+    color: #f5d76e; /* Gold text */
+}
+
+/* Override table row hover effect */
+.row1:hover, .row2:hover {
+    background-color: #f9e7b3; /* Light gold on hover */
+}

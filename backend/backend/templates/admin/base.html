@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+
+ 
+{% block site_name %}
+    <!-- Remove the site name (usually "Django Administration") -->
+{% endblock %}
+
+{% block nav-global %}
+    <!-- Customize or remove the navbar if it contains branding -->
+    <nav class="main-header navbar navbar-expand">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin:index' %}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </li>
+            <!-- Add more navigation items as needed -->
+        </ul>
+        <!-- Keep the user tools (e.g., logout, user info) -->
+        
+    </nav>
+{% endblock %}

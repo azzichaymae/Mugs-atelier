@@ -25,6 +25,7 @@ class Product(models.Model):
         if ratings.exists():
             return sum(rating.value for rating in ratings) / ratings.count()
         return 0
+    
      
 class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

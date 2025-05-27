@@ -1,0 +1,27 @@
+{% extends "jazzmin/login.html" %}
+
+{% block branding %}
+    <!-- Remove branding on the login page -->
+{% endblock %}
+
+{% block content %}
+<div class="login-box" style="background-color: #f6f0e1; border: 1px solid #c9bda9; padding: 20px; border-radius: 8px;">
+    <h2 style="color: #3a2e1a;">Admin Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" style="background-color: #9c6f3c; color: #f6f0e1; padding: 8px 16px; border: none; border-radius: 4px;">
+            Log In
+        </button>
+        <a href="{% url 'admin:password_reset' %}" style="color: #7a5a33; margin-left: 10px;">Reset Password</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+    <!-- Remove navbar on login page -->
+{% endblock %}
+
+{% block nav-sidebar %}
+    <!-- Remove sidebar on login page -->
+{% endblock %}

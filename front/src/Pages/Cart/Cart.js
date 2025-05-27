@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 const Cart = () => {
   const { cart, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
-
   const cartItems = cart.map((item) => ({
     id: item.id,
     name: item.name,
@@ -18,7 +17,9 @@ const Cart = () => {
     image: item.image,
     category: item.category,
     description: item.description,
+    stock: item.stock,
   }));
+  console.log(cartItems);
   const totalItems = cart.length;
   const isCartEmpty = cartItems.length === 0;
 
@@ -27,7 +28,7 @@ const Cart = () => {
     .reduce((a, b) => a + b, 0);
   const shipping = 10.0;
   const total = subtotal + shipping;
-
+console.log(cart);
   const changeQuantity = (operation, item) => {
     const q = parseInt(item.quantity);
     if (operation === "-") {
@@ -40,6 +41,18 @@ const Cart = () => {
       };
     } else if (operation === "+") {
       return () => {
+        console.log(item.stock);
+        console.log(q);
+        if (item.stock < q + 1) {
+          toast.error("Not enough stock available!", {
+            position: "top-center",
+            autoClose: 1000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+          });
+          return;
+        }
         updateQuantity(item.id, q + 1);
       };
     }

@@ -17,7 +17,25 @@ const ProductListing = () => {
   const [maxPrice, setMaxPrice] = useState(40);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // State for current page
-  const productsPerPage = 6; // Number of products per page
+  const productsPerPage = 8; // Number of products per page
+  // const currentQuantity = 1; // Default quantity for adding to cart
+  // const [quantity, setQuantity] = useState(currentQuantity);
+
+  // const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  // const returnQuantity= (id)=>{
+  //   if (cart){
+  //     const quantity = cart.find((item) =>
+  //       item.id === id
+  //     )?.quantity;
+  //     if (quantity) {
+  //       setQuantity(quantity);
+  //     } else {
+  //       setQuantity(1);
+  //     }
+  //   };
+  //   return quantity;
+  // }
 
   // Filter products
   const filteredProducts = products
@@ -96,7 +114,7 @@ const ProductListing = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <div>
-              <h2 className="font-semibold text-sm mb-2 text-[#1a1a1a]">
+              <h2 className="font-semibold text-sm my-2 text-[#1a1a1a]">
                 Category
               </h2>
               <ul className="flex flex-col gap-2 text-[#1a1a1a] text-sm font-normal max-h-64 overflow-y-auto">
@@ -162,28 +180,38 @@ const ProductListing = () => {
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
+                  position: "relative",
+                  opacity: product.stock === 0 ? 0.7 : 1, // Dim out-of-stock items
                 }}
               >
-                <div>
-                  <div className="d-flex justify-content-center align-items-center">
-                    <img
-                      src={`http://127.0.0.1:8000${product.image}`}
-                      alt={product.name}
-                      onClick={(e) => detailsProd(e, product.id)}
-                    />
-                  </div>
-                  <h4>{product.name}</h4>
+                <div className="d-flex justify-content-center align-items-center position-relative">
+                  <img
+                    src={`http://127.0.0.1:8000${product.image}`}
+                    alt={product.name}
+                    onClick={(e) => detailsProd(e, product.id)}
+                    style={{
+                      filter: product.stock === 0 ? "grayscale(100%)" : "none",
+                    }}
+                  />
+                  {product.stock === 0 && (
+                    <div className="out-of-stock-overlay">OUT OF STOCK</div>
+                  )}
                 </div>
-                <span className="mt-2 d-flex justify-content-between align-items-center">
-                  <p>${product.price}</p>
-                  <button className="btn btn-sm">
-                    <svg
+                <h4>{product.name}</h4>
+                <span className="price-container mt-2 row  ">
+                  <p
+                    className={`col-10 ${product.stock === 0 ? "out-of-stock-price" : ""}`}
+                  >
+                    ${product.price}
+                  </p>
+                  <button className="col-2 btn btn-sm" disabled={product.stock === 0} style={{ border: "none" }}>
+                    <svg 
                       xmlns="http://www.w3.org/2000/svg"
                       version="1.1"
                       width="20"
                       height="20"
                       viewBox="0 0 256 256"
-                      className="add-to-cart-icon"
+                      className=" add-to-cart-icon"
                       style={{ cursor: "pointer" }}
                       onClick={() => addToCart(product, 1)}
                     >
@@ -278,43 +306,41 @@ const ProductListing = () => {
           )}
 
           {/* Pagination Controls */}
-         
         </main>
-        
       </div>
-       {totalPages > 1 && (
-            <div className="pagination flex justify-center items-center gap-2 mt-6">
-              <button
-                className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
+      {totalPages > 1 && (
+        <div className="pagination flex justify-center items-center gap-2 mt-6">
+          <button
+            className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
 
-              {Array.from({ length: totalPages }, (_, index) => (
-                <button
-                  key={index + 1}
-                  className={`px-3 py-1 rounded-md ${
-                    currentPage === index + 1
-                      ? "bg-[#6b5e4a] text-white"
-                      : "bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf]"
-                  }`}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              className={`px-3 py-1 rounded-md ${
+                currentPage === index + 1
+                  ? "bg-[#6b5e4a] text-white"
+                  : "bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf]"
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
 
-              <button
-                className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <button
+            className="px-3 py-1 rounded-md bg-[#f0e9df] text-[#6b5e4a] hover:bg-[#e0d9cf] disabled:opacity-50"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

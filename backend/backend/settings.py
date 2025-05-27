@@ -37,6 +37,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Application definition
 
 INSTALLED_APPS = [
+    'backend',
+    'jazzmin',  # Optional: For a better admin interface
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,9 +53,26 @@ INSTALLED_APPS = [
     'store',
     "cart",
     'addresses',
+    
 
 ]
-
+JAZZMIN_SETTINGS = {
+    "site_title": "Admin Panel",
+    "site_header": "Admin Dashboard",  # Custom header text
+    "site_brand": "My Shop",  # Custom branding text
+    "site_logo": "img/logo.png",  # Path to your logo image
+    "login_logo": "img/logo.png",  # Optional: Logo on the login page
+    "site_header": "",  # Empty to avoid header text
+      # Empty to avoid sidebar branding
+    "welcome_sign": "Admin Login",  # Minimal login page message
+    "custom_css": "css/custom_admin.css",
+    "custom_login_template": "admin/login.html",
+    # Optional: Add a link to your React frontend
+    "topmenu_links": [
+        {"name": "Go to Shop", "url": "http://127.0.0.1:3000/shop", "new_window": True},
+    ],
+}
+JAZZMIN_SETTINGS["show_ui_builder"] = True
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be first for CORS
     'django.middleware.security.SecurityMiddleware',
@@ -152,8 +172,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# This is the directory where collectstatic will collect all static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

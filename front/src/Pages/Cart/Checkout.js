@@ -16,6 +16,7 @@ const Checkout = () => {
     price: item.price,
     quantity: item.quantity,
     image: item.image,
+    stock : item.stock
   }));
   const subtotal = cartItems
     .map((item) => item.price * item.quantity)
@@ -188,10 +189,53 @@ const Checkout = () => {
       });
     }
   };
+// const updateStock = async (cartItems) => {
+//   try {
+//     const stockPromises = cartItems.map((item) =>
+//       fetch(`http://127.0.0.1:8000/products/stock/${item.id}/`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ quantity: item.quantity }),
+//       })
+//     );
+
+//     const stockResponses = await Promise.all(stockPromises);
+
+//     // Ensure responses are parsed properly
+//     const stockData = await Promise.all(
+//       stockResponses.map(async (response) => {
+//         if (!response.ok) {
+//           console.error(`Erreur lors de la mise à jour du stock pour ${item.id}:`, await response.text());
+//           return null;
+//         }
+//         return response.json();
+//       })
+//     );
+
+//     const allStockUpdated = stockData.every((result) => result && result.message === "Stock updated successfully");
+
+//     if (!allStockUpdated) {
+//       toast.error("Échec de mise à jour du stock pour certains articles.", {
+//         position: "top-right",
+//         autoClose: 3000,
+//       });
+//     } else {
+//       toast.success("Stock mis à jour avec succès !");
+//     }
+//   } catch (error) {
+//     console.error("Erreur dans l'actualisation du stock :", error);
+//   }
+// };
+
+// Appel de la fonction lors du checkout
+
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -229,6 +273,32 @@ const Checkout = () => {
     };
 
     try {
+// updateStock(cartItems);
+      
+      // const stockPromises = cartItems.map((item) =>
+      //   fetch(`http://127.0.0.1:8000/products/stock/${item.id}/`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ quantity: item.quantity }),
+      //   })
+      // );
+      // console.log("Stock promises:", stockPromises);
+      // const stockResponses = await Promise.all(stockPromises);
+      // const stockData = stockResponses.map((response) =>
+      //   response.status === 200 ? response.json() : null
+      // );
+      // const stockResults = await Promise.all(stockData);
+      // const allStockUpdated = stockResults.every((result) => result && result.success);
+      // if (!allStockUpdated) {
+      //   toast.error("Failed to update stock for some items.", {
+      //     position: "top-right",
+      //     autoClose: 3000,
+      //   });
+      //   return;
+      // }
+
       const fetchPromise = fetch("http://127.0.0.1:8000/checkout/", {
         method: "POST",
         headers: {
@@ -274,6 +344,21 @@ const Checkout = () => {
           autoClose: 3000,
         });
       }
+
+      if (response.status === 200 || response.status === 201) {
+      // Loop through cart items and update stock individually
+      await Promise.all(cartItems.map((item) =>
+        fetch(`http://127.0.0.1:8000/products/stock/${item.id}/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: item.quantity }),
+        })
+      ));
+
+    } else {
+      toast.error("Failed to place order.", { autoClose: 3000 });
+    }
+
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error(`An error occurred during checkout: ${error.message}`, {

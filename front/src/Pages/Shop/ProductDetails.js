@@ -14,12 +14,8 @@ const ProductDetails = () => {
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(null);
 
-  const handleQuantityChange = (event) => {
-    setQuantity(event.target.value);
-    console.log("Quantity changed:", event.target.value);
-  };
   const { addToCart } = useCart();
 
   const fetchRatings = async () => {
@@ -49,7 +45,7 @@ const ProductDetails = () => {
       console.error("Error fetching images:", error);
     }
   };
-  console.log(images);
+
   const handleBuyNow = () => {
     // Buy now logic here
     // console.log("Buy now:", product);
@@ -68,7 +64,21 @@ const ProductDetails = () => {
       console.error("Error fetching product:", error);
     }
   };
-
+  const { returnQuantity } = useCart();
+  const handleQuantityChange = (event) => {
+    const availableStock = product.stock - parseInt(returnQuantity(product.id));
+    if (product.stock - returnQuantity(product.id) >= event.target.value    ) {
+      setQuantity(event.target.value);
+    } else {
+      toast.error(`Not enough stock available,${availableStock!== 0 ? "only" : ""} ${availableStock} left!`, {
+        position: "top-center",
+        autoClose: 1000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+      });
+    }
+  };
   const id_user = localStorage.getItem("user_id") || null;
   const handleAddRating = () => {
     if (!id_user) {
@@ -107,28 +117,32 @@ const ProductDetails = () => {
   }
 
   const handleAddToCart = async () => {
-    setIsLoading(true);
-    setIsSuccess(false);
-    const arrow = document.querySelector(".arrow");
-    arrow.classList.add("hidden");
-     
-    setTimeout(() => {
-      try {
-        setIsSuccess(true);
-        addToCart(product, quantity);
-        setTimeout(() => {
-          setIsSuccess(false);
-          arrow.classList.remove("hidden");
-         
-        }, 1500);
-      } catch (error) {
-        console.error("Error adding to cart:", error);
-        toast.error("An error occurred.", { autoClose: 1500 });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1800);
-  };
+  setIsLoading(true);
+  setIsSuccess(null); 
+
+  const arrow = document.querySelector(".arrow");
+  arrow.classList.add("hidden");
+ 
+  setTimeout(() => {
+    try {
+      const result = addToCart(product, quantity);
+
+      setIsSuccess(result); // true or false
+
+      setTimeout(() => {
+        setIsSuccess(null); // reset after showing success/error icon
+        arrow.classList.remove("hidden");
+      }, 1500);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("An error occurred.", { autoClose: 1500 });
+      setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, 1800);
+};
+
   return (
     <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
       <nav className="flex space-x-6 text-sm font-normal text-gray-500 mb-6">
@@ -263,8 +277,8 @@ const ProductDetails = () => {
                   onClick={handleAddToCart}
                   aria-label="Add to cart"
                   id="add-to-cart"
-                  
-className="btn btn-warning flex items-center justify-center space-x-2  text-white  px-5 py-1 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#fbcb2b]   relative group"                >
+                  className={`btn btn-warning ${isLoading ? "disabled" :"" } flex items-center justify-center space-x-2  text-white  px-5 py-1 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#fbcb2b]   relative group`}
+                >
                   <i className="fas fa-shopping-cart text-2xl drop-shadow-md"></i>
                   <span className="text-md">Add to Cart</span>
 
@@ -275,8 +289,12 @@ className="btn btn-warning flex items-center justify-center space-x-2  text-whit
                   {isLoading && (
                     <i className="fas fa-spinner fa-spin absolute right-4 text-xl"></i>
                   )}
-                  {isSuccess && !isLoading && (
-                    <i className="fas fa-check absolute right-4 text-xl text-white-500"></i>
+                   {isSuccess === true && !isLoading && (
+                   <i className="fas fa-check absolute right-4 text-xl text-green-500"></i>
+                  )}
+                  {isSuccess === false && !isLoading && (
+                    <i class="fas fa-solid fa-triangle-exclamation absolute right-4  text-red-500"></i>
+                    
                   )}
                 </button>
                 <i className="far fa-heart ml-2 text-xl transition-colors duration-200 hover:text-red-500"></i>

@@ -161,3 +161,23 @@ def get_secondary_images(request, product_id):
             return JsonResponse({'secondary_images': secondary_images_list})
         except ObjectDoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
+@csrf_exempt       
+def set_stock(request, product_id):
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(id=product_id)
+            data = json.loads(request.body)
+            
+            quantity = data.get('quantity')
+            if quantity is not None and isinstance(quantity, int) and quantity > 0 and quantity <= product.stock:
+                product.stock -= quantity
+                product.save()
+                return JsonResponse({'message': 'Stock updated successfully'})
+            else:
+                return JsonResponse({'error': 'Invalid stock value'}, status=400)
+         
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'Product not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)

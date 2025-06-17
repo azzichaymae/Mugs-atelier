@@ -1,0 +1,134 @@
+/* General Background */
+body {
+    background-color: #f3f0de; /* Matching your homepage */
+    font-family: "Arial", sans-serif;
+    color: #4a4a3a;
+}
+
+/* Admin Header */
+.module caption {
+    background-color: #c9c5a1;
+    color: #4a4a3a;
+    font-weight: bold;
+    padding: 10px;
+}
+
+/* Table Styles */
+table {
+    border: 1px solid #c9c5a1;
+    background-color: #fff;
+}
+
+th, td {
+    padding: 8px;
+    border-bottom: 1px solid #c9c5a1;
+}
+
+/* Button Styling */
+.button, input[type="submit"] {
+    background-color: #4a4a3a;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover, input[type="submit"]:hover {
+    background-color: #7a765a;
+}
+
+/* Sidebar & Forms */
+#content-main {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+select, input[type="text"], input[type="password"], textarea {
+    border: 1px solid #c9c5a1;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f5f2ed;
+    color: #4a4a3a;
+}
+
+/* Footer */
+#footer {
+    background-color: #c9c5a1;
+    color: #4a4a3a;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .button {
+        padding: 10px;
+    }
+}
+#header {
+    background-color: #9c8058 !important; /* Matches homepage */
+}
+
+.module caption {
+    background-color: #9c8058 !important; /* Matches homepage */
+    color: #ffffff !important; /* Change caption text color */
+}
+th a {
+    color: #000000 !important; /* Change link color in module captions */
+}
+h1{
+    color: #4a4a3a !important; /* Change main header color */
+        font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        font-size:x-large;
+}
+#header a {
+    color: #4a4a3a !important;
+}
+.default {
+    background-color: #9c8058 !important; /* Matches homepage */
+    color: #fff !important; /* Change default text color */
+
+}
+.submit-row{
+    background-color: #9c805800 !important; /* Matches homepage */
+    
+    border: none !important; /* Remove border */
+}
+:root {
+    --breadcrumbs-fg: #4a4a3a !important; /* Change breadcrumb text color */
+    --breadcrumbs-link-fg: #7a765a !important; /* Modify breadcrumb link color */
+    --breadcrumbs-bg: #d3cfaa00 !important; /* Set breadcrumb background */
+}
+#site-name a{
+    color: #ffffff !important; /* Change site name color */
+}
+#nav-sidebar {
+    z-index: 15;
+    flex: 0 0 275px;
+    left: -276px;
+    
+    border-top: 1px solid transparent;
+    border-right: 1px solid var(--hairline-color);
+    background-color: var(--body-bg);
+    overflow: auto;
+    padding: 10px;
+    border-radius: 5px;
+}
+#nav-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 2px 5px;
+    margin: 5px 0;
+    border: 1px solid var(--border-color);
+    background-color: var(--darkened-bg);
+    color: var(--body-fg);
+    margin-bottom: 8px;
+    border-radius: 10px;
+    size: 5px;
+}

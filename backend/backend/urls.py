@@ -11,7 +11,9 @@ urlpatterns = [
     path('', include('addresses.urls')),
     path('admin/', custom_admin_site.urls),
     path('', include('cart.urls')),
-]
+    path('', include('wishlist.urls')),
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

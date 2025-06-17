@@ -83,7 +83,6 @@ def CheckoutView(request):
         return JsonResponse({"error": str(e)}, status=500)    
 @api_view(['GET'])
 def user_orders_view(request):
-    """ Retrieve all orders placed by a specific user """
 
     user_id = request.GET.get("user_id")
     

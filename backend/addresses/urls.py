@@ -8,7 +8,7 @@ urlpatterns = [
     # URL for creating a new address for a user
     path('user/<int:user_id>/addresses/new/', views.AddressCreateView , name='user_address_create'),
     
-    # URL for editing an address of a user
+ 
     path('user/<int:user_id>/addresses/<int:id>/edit/', views.AddressUpdateView , name='user_address_edit'),
     
     # URL for deleting an address of a user

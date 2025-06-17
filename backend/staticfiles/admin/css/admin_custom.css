@@ -1,41 +1,81 @@
-/* Override Django admin header colors */
-#branding h1 {
-    background-color: #f5d76e; /* Gold background for the header */
-    color: #2c3e50; /* Dark text for contrast */
+/* General Background */
+body {
+    background-color: #f3f0de; /* Matching your homepage */
+    font-family: "Arial", sans-serif;
+    color: #4a4a3a;
+}
+
+/* Admin Header */
+.module caption {
+    background-color: #c9c5a1;
+    color: #4a4a3a;
+    font-weight: bold;
     padding: 10px;
 }
 
-/* Override the top navigation bar */
-#header {
-    background-color: #2c3e50; /* Dark blue background */
-    color: #f5d76e; /* Gold text */
+/* Table Styles */
+table {
+    border: 1px solid #c9c5a1;
+    background-color: #fff;
 }
 
-/* Override link colors */
-a:link, a:visited {
-    color: #d47f00; /* Orange for links */
+th, td {
+    padding: 8px;
+    border-bottom: 1px solid #c9c5a1;
 }
 
-/* Override button colors */
-.button, input[type=submit], input[type=button], .submit-row input {
-    background-color: #d47f00; /* Orange buttons */
-    color: white;
-    border: none;
-    padding: 8px 15px;
+/* Button Styling */
+.button, input[type="submit"] {
+    background-color: #4a4a3a;
+    color: #fff;
+    padding: 8px 12px;
     border-radius: 5px;
+    border: none;
+    cursor: pointer;
 }
 
-.button:hover, input[type=submit]:hover, input[type=button]:hover {
-    background-color: #e89b00; /* Slightly lighter orange on hover */
+.button:hover, input[type="submit"]:hover {
+    background-color: #7a765a;
 }
 
-/* Override section headings */
-.module h2, .module caption, .inline-group h2 {
-    background-color: #2c3e50; /* Dark blue for section headers */
-    color: #f5d76e; /* Gold text */
+/* Sidebar & Forms */
+#content-main {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
 }
 
-/* Override table row hover effect */
-.row1:hover, .row2:hover {
-    background-color: #f9e7b3; /* Light gold on hover */
+select, input[type="text"], input[type="password"], textarea {
+    border: 1px solid #c9c5a1;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f5f2ed;
+    color: #4a4a3a;
+}
+
+/* Footer */
+#footer {
+    background-color: #c9c5a1;
+    color: #4a4a3a;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .button {
+        padding: 10px;
+    }
+}
+#header {
+    background-color: #c9c5a1 !important; /* Matches homepage */
+}
+
+/* Update header text color */
+#header a {
+    color: #4a4a3a !important;
 }

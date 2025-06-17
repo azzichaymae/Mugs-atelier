@@ -129,6 +129,8 @@
     border: 1px solid var(--border-color);
     background-color: var(--darkened-bg);
     color: var(--body-fg);
+    margin-bottom: 8px;
+    border-radius: 10px;
 }
 
 #nav-filter:focus {

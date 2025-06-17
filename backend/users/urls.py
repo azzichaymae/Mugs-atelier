@@ -5,6 +5,6 @@ urlpatterns = [
     path('login/', views.login_user),
     path('register/', views.user_register),
     path('find/<int:user_id>/', views.find_user_by_id),
-    path('update/<int:user_id>/',views.update_user),
+    path('update/<int:user_id>/', views.UserUpdateView, name='user-update'),
    
 ]

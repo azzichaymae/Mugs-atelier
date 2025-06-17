@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import "./Shop.css";
 import { useContext } from "react";
@@ -7,37 +7,23 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from "react-router-dom";
 
 const ProductListing = () => {
+ const useQuery = () => new URLSearchParams(useLocation().search);
+const query = useQuery();
+const searchTermFromURL = query.get("search") || "";
   const { addToCart } = useCart();
   const { products } = useContext(ProductContext);
   const { categories } = useContext(ProductContext);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [maxPrice, setMaxPrice] = useState(40);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchTermFromURL);
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const productsPerPage = 8; // Number of products per page
-  // const currentQuantity = 1; // Default quantity for adding to cart
-  // const [quantity, setQuantity] = useState(currentQuantity);
 
-  // const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  // const returnQuantity= (id)=>{
-  //   if (cart){
-  //     const quantity = cart.find((item) =>
-  //       item.id === id
-  //     )?.quantity;
-  //     if (quantity) {
-  //       setQuantity(quantity);
-  //     } else {
-  //       setQuantity(1);
-  //     }
-  //   };
-  //   return quantity;
-  // }
-
-  // Filter products
+ 
   const filteredProducts = products
     .filter((product) => {
       if (selectedCategory === "All") return true;
@@ -50,7 +36,9 @@ const ProductListing = () => {
         product.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-  // Calculate pagination
+useEffect(() => {
+  setSearchTerm(searchTermFromURL);
+}, [searchTermFromURL]);
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const startIndex = (currentPage - 1) * productsPerPage;
   const endIndex = startIndex + productsPerPage;
@@ -200,12 +188,18 @@ const ProductListing = () => {
                 <h4>{product.name}</h4>
                 <span className="price-container mt-2 row  ">
                   <p
-                    className={`col-10 ${product.stock === 0 ? "out-of-stock-price" : ""}`}
+                    className={`col-10 ${
+                      product.stock === 0 ? "out-of-stock-price" : ""
+                    }`}
                   >
                     ${product.price}
                   </p>
-                  <button className="col-2 btn btn-sm" disabled={product.stock === 0} style={{ border: "none" }}>
-                    <svg 
+                  <button
+                    className="col-2 btn btn-sm"
+                    disabled={product.stock === 0}
+                    style={{ border: "none" }}
+                  >
+                    <svg
                       xmlns="http://www.w3.org/2000/svg"
                       version="1.1"
                       width="20"

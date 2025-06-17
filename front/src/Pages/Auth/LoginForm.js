@@ -4,7 +4,7 @@ const LoginForm = ({action, setAction, email, setEmail, password, setPassword, e
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form className="space-y-5 text-sm font-normal" onSubmit={handleLogin}>
+    <form className="space-y-3 text-sm font-normal" onSubmit={handleLogin}>
       <div>
         <label className="block text-sm mb-1" htmlFor="email">
           Email

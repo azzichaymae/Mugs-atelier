@@ -1,8 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-
-// Create the context
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from 'sweetalert2';
 const CartContext = createContext();
 
 // Custom hook for using the cart
@@ -78,12 +77,26 @@ export const CartProvider = ({ children }) => {
     );
   };
   const removeFromCart = (id) => {
-    if (
-      window.confirm("Are you sure you want to remove this item from the cart?")
-    ) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== id));
-    }
-    return null;
+    Swal.fire({
+            
+            text: 'Are you sure you want to remove this item from the cart ?',
+            icon: 'warning',
+            width: '300px',  
+            padding: '0.8rem',
+            showCancelButton: true,
+           
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'btn btn-md  btn-success',
+                cancelButton: 'btn btn-md btn-secondary',
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                 setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+            }
+        });
+    
   };
   const clearCart = () => {
     setCart([]);

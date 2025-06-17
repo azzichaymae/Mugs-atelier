@@ -371,7 +371,7 @@ const Checkout = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 ">
       <style>
         {`
           .spinner {
@@ -423,7 +423,7 @@ const Checkout = () => {
         <span className="text-gray-400 mx-1">/</span>
         <span className="text-gray-700 mx-1">Checkout</span>
       </nav>
-      <main className="max-w-[1200px] mx-auto">
+      <main className="max-w-[1200px] mx-auto  ">
         <ToastContainer />
         <nav
           aria-label="Progress"
@@ -478,85 +478,108 @@ const Checkout = () => {
             </span>
           </div>
         </nav>
-        <section className="flex flex-col lg:flex-row gap-6">
+        <section className="flex flex-col lg:flex-row gap-6 ">
           {action === "confirmation" ? (
-            <div className="flex-1 bg-[#f6f0e1] border border-[#c9bda9] rounded-md p-6 text-center">
-              <div className="checkmark mb-6"></div>
-              <h2 className="text-2xl font-normal text-[#3a2e1a] mb-4">
-                Thank You for Your Order!
-              </h2>
-              <p className="text-sm text-[#7a5a33cc] mb-6">
-                Your order has been successfully placed. You'll receive a confirmation email soon.
-              </p>
-              <div className="text-left max-w-5xl mx-auto">
-                <h3 className="text-lg font-normal text-[#3a2e1a] mb-4">Order Details</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-semibold text-[#3a2e1a]">Order ID</p>
-                    <p className="text-sm text-[#7a5a33cc]">{orderDetails.orderId}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#3a2e1a]">Items</p>
-                    {orderDetails.items.map((item) => (
-                      <div key={item.id} className="flex gap-4 mt-2">
-                        <img
-                          alt={`${item.name} product image`}
-                          className="w-[60px] h-[60px] object-cover rounded"
-                          height="60"
-                          src={`http://127.0.0.1:8000${item.image}`}
-                          width="60"
-                        />
-                        <div className="flex-1 text-xs">
-                          <p className="font-semibold text-[#3a2e1a] mb-1">{item.name}</p>
-                          <p className="text-[#7a5a33cc] mb-0.5">
-                            Qty: <span className="font-semibold text-[#3a2e1a]">{item.quantity}</span>
-                          </p>
-                          <p className="text-[#7a5a33cc]">
-                            Price: <span className="font-semibold text-[#3a2e1a]">${(item.price * item.quantity).toFixed(2)}</span>
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#3a2e1a]">Shipping Address</p>
-                    <p className="text-sm text-[#7a5a33cc]">
-                      {orderDetails.shippingAddress.street}, {orderDetails.shippingAddress.city}, {orderDetails.shippingAddress.postalCode}, {orderDetails.shippingAddress.country}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#3a2e1a]">Payment Method</p>
-                    <p className="text-sm text-[#7a5a33cc]">{orderDetails.paymentMethod}</p>
-                  </div>
-                  <div className="text-sm space-y-2">
-                    <div className="flex justify-between text-[#7a5a33cc]">
-                      <span>Subtotal</span>
-                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-[#7a5a33cc]">
-                      <span>Shipping</span>
-                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.shipping.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-[#7a5a33cc]">
-                      <span>Tax</span>
-                      <span className="font-semibold text-[#3a2e1a]">${orderDetails.tax.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold text-[#3a2e1a]">
-                      <span>Total</span>
-                      <span>${orderDetails.total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-                <span className="flex justify-end">
-                  <Link
-                    to="/shop"
-                    className="inline-block bg-[#9c6f3c] text-[#f6f0e1] px-5 py-2 rounded-md text-sm font-normal hover:bg-[#7a5a33] transition-colors mt-6"
-                  >
-                    Continue Shopping
-                  </Link>
-                </span>
-              </div>
+            <div className="flex-1 bg-white  border border-[#c9bda9] rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
+  <div className="text-center mb-8">
+    <div className="mx-auto mb-6 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center animate-pulse">
+      <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <h2 className="text-3xl font-bold text-gray-900 mb-3">Order Confirmed!</h2>
+    <p className="text-base text-gray-600">Your order has been successfully placed.</p>
+  </div>
+  <div className="space-y-6">
+    <details className="border border-gray-200 rounded-lg p-5 bg-gray-50" open>
+      <summary className="text-lg font-semibold text-gray-800 cursor-pointer flex items-center gap-2">
+        <svg className="h-5 w-5 text-[#9c6f3c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        Order Items
+      </summary>
+      <div className="mt-4 space-y-4">
+        {orderDetails.items.map((item) => (
+          <div key={item.id} className="flex gap-4 items-center">
+            <img
+              alt={`${item.name} product image`}
+              className="w-14 h-14 object-cover rounded-lg shadow-sm"
+              src={`http://127.0.0.1:8000${item.image}`}
+            />
+            <div className="flex-1 text-sm">
+              <p className="font-medium text-gray-800">{item.name}</p>
+              <p className="text-gray-600">Qty: <span className="font-medium">{item.quantity}</span></p>
+              <p className="text-gray-600">Price: <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span></p>
             </div>
+          </div>
+        ))}
+      </div>
+    </details>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <svg className="h-5 w-5 text-[#9c6f3c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Shipping Details
+        </h3>
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="font-medium text-gray-800">Order ID</p>
+            <p className="text-gray-600">{orderDetails.orderId}</p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-800">Shipping Address</p>
+            <p className="text-gray-600">
+              {orderDetails.shippingAddress.street}, {orderDetails.shippingAddress.city}, {orderDetails.shippingAddress.postalCode}, {orderDetails.shippingAddress.country}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <svg className="h-5 w-5 text-[#9c6f3c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          Payment Details
+        </h3>
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="font-medium text-gray-800">Payment Method</p>
+            <p className="text-gray-600">{orderDetails.paymentMethod}</p>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span className="font-medium text-gray-800">${orderDetails.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Shipping</span>
+              <span className="font-medium text-gray-800">${orderDetails.shipping.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Tax</span>
+              <span className="font-medium text-gray-800">${orderDetails.tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between font-semibold text-gray-800 pt-2 border-t border-gray-200">
+              <span>Total</span>
+              <span>${orderDetails.total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className="flex justify-center mt-8">
+    <Link
+      to="/shop"
+      className="inline-block bg-[#9c6f3c] text-[#f6f0e1] px-4 py-2 rounded-lg text-base font-medium hover:bg-[#e0a969] transition-all duration-300 ease-in-out shadow-md"
+    >
+      Continue Shopping
+    </Link>
+  </div>
+</div>
           ) : (
             <form
               aria-labelledby="shipping-info"

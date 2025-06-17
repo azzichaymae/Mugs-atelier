@@ -59,9 +59,9 @@ console.log(cart);
   };
 
   const handleProceedToCheckout = () => {
-    // Check if cart is empty
+  
     if (isCartEmpty) {
-      toast.error("Your cart is empty. Please add items to proceed.", {
+      toast.error("Your cart is empty !", {
        position: "top-center",
               autoClose: 1500,
               hideProgressBar: true,
@@ -136,7 +136,9 @@ console.log(cart);
                       src={`http://127.0.0.1:8000${item.image}`}
                       alt={item.name}
                       class="rounded-md"
-                      style={{ height: "100px" }}
+                      style={{ 
+                        width: "7vw"
+                      }}
                     />
                     <div class="flex flex-col gap-1">
                       <span class="text-gray-700 text-sm">{item.name}</span>

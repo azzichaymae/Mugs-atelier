@@ -107,7 +107,14 @@ const ProductRatings = () => {
   const addRate = async (event) => {
     event.preventDefault();
     if (!id_user) {
-      alert("Please log in to submit a review.");
+       toast.error(`Please log in to submit a review !`, {
+              position: "top-center",
+              autoClose: 1000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+            });
+      
       navigate("/login");
       return;
     }

@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from 'sweetalert2';
+
 const Addresses = () => {
   const userId = localStorage.getItem("user_id");
   const [addresses, setAddresses] = useState([]);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Track if editing
+  const [editAddressId, setEditAddressId] = useState(null); // Store ID of address being edited
   const [newAddress, setNewAddress] = useState({
     street: "",
     city: "",
-   
     postal_code: "",
     country: "",
     address_type: "Home",
@@ -31,7 +34,7 @@ const Addresses = () => {
       .catch((err) => {
         setError("Failed to fetch addresses. Please try again later.");
       });
-  }, [showForm]);
+  }, [showForm, userId]);
 
   const validateForm = () => {
     const errors = {};
@@ -51,14 +54,42 @@ const Addresses = () => {
 
   const addAddress = () => {
     setShowForm(true);
+    setIsEditing(false);
+    setEditAddressId(null);
+    setNewAddress({
+      street: "",
+      city: "",
+      postal_code: "",
+      country: "",
+      address_type: "Home",
+    });
     setFormErrors({});
     setError("");
+  };
+
+  const editAddress = (id) => {
+    const addressToEdit = addresses.find((address) => address.id === id);
+    if (addressToEdit) {
+      setNewAddress({
+        street: addressToEdit.street,
+        city: addressToEdit.city,
+        postal_code: addressToEdit.postal_code,
+        country: addressToEdit.country,
+        address_type: addressToEdit.address_type,
+      });
+      setEditAddressId(id);
+      setIsEditing(true);
+      setShowForm(true);
+      setFormErrors({});
+      setError("");
+    } else {
+      setError("Address not found.");
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAddress({ ...newAddress, [name]: value });
-    // Clear error for the field being edited
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -66,45 +97,85 @@ const Addresses = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      
       return;
     }
 
-    fetch(`http://127.0.0.1:8000/user/${userId}/addresses/new/`, {
-      method: "POST",
+    const url = isEditing
+      ? `http://127.0.0.1:8000/user/${userId}/addresses/${editAddressId}/edit/`
+      : `http://127.0.0.1:8000/user/${userId}/addresses/new/`;
+
+    const method = isEditing ? "PUT" : "POST";
+
+    fetch(url, {
+      method,
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(newAddress),
     })
       .then((res) => {
-        if (!res.ok) throw new Error(`Failed to add address: ${res.status}`);
+        if (!res.ok) throw new Error(`Failed to ${isEditing ? "update" : "add"} address: ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        setAddresses([...addresses, data]);
+        if (isEditing) {
+          setAddresses(
+            addresses.map((address) =>
+              address.id === editAddressId ? { ...address, ...newAddress } : address
+            )
+          );
+          toast.success("Address updated successfully.", {
+            position: "top-center",
+            autoClose: 1500,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+          });
+        } else {
+          setAddresses([...addresses, data]);
+          toast.success("Address added successfully.", {
+            position: "top-center",
+            autoClose: 1500,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+          });
+        }
         setNewAddress({
           street: "",
           city: "",
-         
           postal_code: "",
           country: "",
           address_type: "Home",
         });
         setShowForm(false);
+        setIsEditing(false);
+        setEditAddressId(null);
         setError("");
       })
       .catch((err) => {
-        setError("Failed to add address. Please try again.");
+        setError(`Failed to ${isEditing ? "update" : "add"} address. Please try again.`);
       });
   };
 
-  const editAddress = (id) => {
-    console.log("Edit Address button clicked for ID:", id);
-  };
-
   const removeAddress = (id) => {
-    fetch(`http://127.0.0.1:8000/user/${userId}/addresses/${id}/delete/`, {
+     Swal.fire({
+            
+            text: 'Are you sure you want to remove this address ?',
+            icon: 'warning',
+            width: '300px',  
+            padding: '0.8rem',
+            showCancelButton: true,
+           
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'btn btn-md  btn-success',
+                cancelButton: 'btn btn-md btn-secondary',
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+ fetch(`http://127.0.0.1:8000/user/${userId}/addresses/${id}/delete/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -118,16 +189,18 @@ const Addresses = () => {
       .then(() => {
         setAddresses(addresses.filter((address) => address.id !== id));
         toast.success("Address deleted successfully.", {
-                  position: "top-center",
-              autoClose: 1500,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: false,
-                });
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+        });
       })
       .catch((err) => {
         setError("Failed to remove address. Please try again.");
-      });
+      });            }
+        });
+   
   };
 
   return (
@@ -142,9 +215,10 @@ const Addresses = () => {
         <div className="max-w-5xl rounded-lg" id="addform-content">
           <div className="flex items-center gap-2 px-6 py-4 border-b rounded-t-lg">
             <i className="fas fa-map-marker-alt text-gray-700"></i>
-            <h2 className="text-gray-900 font-semibold text-lg">Add New Address</h2>
+            <h2 className="text-gray-900 font-semibold text-lg">
+              {isEditing ? "Edit Address" : "Add New Address"}
+            </h2>
           </div>
-
           <div className="d-flex justify-center items-center">
             <form
               onSubmit={handleSubmit}
@@ -265,7 +339,18 @@ const Addresses = () => {
               <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setIsEditing(false);
+                    setEditAddressId(null);
+                    setNewAddress({
+                      street: "",
+                      city: "",
+                      postal_code: "",
+                      country: "",
+                      address_type: "Home",
+                    });
+                  }}
                   className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 text-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <i className="fas fa-times"></i> Cancel
@@ -274,16 +359,12 @@ const Addresses = () => {
                   type="submit"
                   className="bg-[#8B6F47] text-white inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2"
                 >
-                  <i className="fas fa-save"></i> Save Address
+                  <i className="fas fa-save"></i> {isEditing ? "Update Address" : "Save Address"}
                 </button>
               </div>
             </form>
             <div>
-              <img
-                src="address.png"
-                alt="Address Icon"
-                className="w-80 h-50"
-              />
+              <img src="address.png" alt="Address Icon" className="w-80 h-50" />
             </div>
           </div>
         </div>
@@ -313,7 +394,7 @@ const Addresses = () => {
                 </div>
                 <p>{address.street}</p>
                 <p>
-                  {address.city}, {address.state} {address.postal_code}
+                  {address.city}, {address.state || ""} {address.postal_code}
                 </p>
                 <p>{address.country}</p>
                 <div className="flex justify-between items-center mt-4">

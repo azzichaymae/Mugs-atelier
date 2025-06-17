@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Product.css";
+import Swal from "sweetalert2";
 const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
@@ -46,10 +47,6 @@ const ProductDetails = () => {
     }
   };
 
-  const handleBuyNow = () => {
-    // Buy now logic here
-    // console.log("Buy now:", product);
-  };
   const fetchProductDetails = async () => {
     try {
       const response = await fetch(
@@ -67,10 +64,28 @@ const ProductDetails = () => {
   const { returnQuantity } = useCart();
   const handleQuantityChange = (event) => {
     const availableStock = product.stock - parseInt(returnQuantity(product.id));
-    if (product.stock - returnQuantity(product.id) >= event.target.value    ) {
+    if (availableStock >= event.target.value) {
       setQuantity(event.target.value);
     } else {
-      toast.error(`Not enough stock available,${availableStock!== 0 ? "only" : ""} ${availableStock} left!`, {
+      toast.error(
+        `Not enough stock available,${
+          availableStock !== 0 ? "only" : ""
+        } ${availableStock} left!`,
+        {
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+        }
+      );
+    }
+
+    if (
+      parseInt(returnQuantity(product.id)) + parseInt(event.target.value) >=
+      10
+    ) {
+      toast.error("You can only order up to 10 items at a time!", {
         position: "top-center",
         autoClose: 1000,
         hideProgressBar: true,
@@ -82,9 +97,25 @@ const ProductDetails = () => {
   const id_user = localStorage.getItem("user_id") || null;
   const handleAddRating = () => {
     if (!id_user) {
-      if (window.confirm("Please login to submit a review.")) {
-        navigate(`/login?redirect=/products/${id}/rate`);
-      }
+      Swal.fire({
+        title: "Not logged in",
+        text: "Please sign in to submit a review !",
+        icon: "warning",
+        width: "300px",
+        padding: "0.8rem",
+        showCancelButton: true,
+
+        confirmButtonText: "Login",
+        cancelButtonText: "Cancel",
+        customClass: {
+          confirmButton: "btn btn-md  btn-success",
+          cancelButton: "btn btn-md btn-secondary",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(`/login?redirect=/products/${id}/rate`);
+        }
+      });
     } else {
       navigate(`/products/${product.id}/rate`);
     }
@@ -109,7 +140,6 @@ const ProductDetails = () => {
     );
   };
 
-  // Determine the current image source
   const currentImageSrc =
     currentImageIndex === -1 ? product.image : images[currentImageIndex].image;
   if (!product) {
@@ -117,31 +147,81 @@ const ProductDetails = () => {
   }
 
   const handleAddToCart = async () => {
-  setIsLoading(true);
-  setIsSuccess(null); 
+    setIsLoading(true);
+    setIsSuccess(null);
 
-  const arrow = document.querySelector(".arrow");
-  arrow.classList.add("hidden");
- 
-  setTimeout(() => {
-    try {
-      const result = addToCart(product, quantity);
+    const arrow = document.querySelector(".arrow");
+    arrow.classList.add("hidden");
 
-      setIsSuccess(result); // true or false
+    setTimeout(() => {
+      try {
+        const result = addToCart(product, quantity);
 
-      setTimeout(() => {
-        setIsSuccess(null); // reset after showing success/error icon
-        arrow.classList.remove("hidden");
-      }, 1500);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error("An error occurred.", { autoClose: 1500 });
-      setIsSuccess(false);
-    } finally {
-      setIsLoading(false);
+        setIsSuccess(result); // true or false
+
+        setTimeout(() => {
+          setIsSuccess(null); // reset after showing success/error icon
+          arrow.classList.remove("hidden");
+        }, 1500);
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("An error occurred.", { autoClose: 1500 });
+        setIsSuccess(false);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 1800);
+  };
+  const addToWishlist = async (userId, productId) => {
+    if (!userId) {
+      Swal.fire({
+        title: "Not logged in",
+        text: "Please sign in to add products to your wishlist!",
+        icon: "warning",
+        width: "300px",
+        showCancelButton: false,
+        confirmButtonText: "Login",
+        customClass: {
+          confirmButton: "btn btn-md btn-success",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate(`/login?redirect=/product/${id}`);
+        }
+      });
+
+      return;
     }
-  }, 1800);
-};
+
+    fetch(`http://127.0.0.1:8000/wishlist/add/${userId}/${productId}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        Swal.fire({
+          title: data.message,
+          icon: "success",
+          width: "300px",
+          padding: "0.8rem",
+          confirmButtonText: "OK",
+          customClass: {
+            confirmButton: "btn btn-md btn-success",
+          },
+        });
+      })
+      .catch((error) => {
+        Swal.fire({
+          title: "Error",
+          text: "Failed to add product to wishlist",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        console.error("Error adding to wishlist:", error);
+      });
+  };
 
   return (
     <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
@@ -162,8 +242,62 @@ const ProductDetails = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
         <ToastContainer />
         <section className="flex flex-col lg:flex-row lg:space-x-5">
-          <div className="flex lg:flex-col gap-2 ">
-            <div className="relative flex flex-col  items-start space-y-2">
+          {/* Thumbnail buttons (vertical on large screens, hidden on small screens) */}
+          <div className="hidden lg:flex lg:flex-col gap-2 mb-4 lg:mb-0">
+            {[
+              { id: `product-${product.id}`, image: product.image },
+              ...images,
+            ].map((img, index) => (
+              <button
+                key={img.id}
+                aria-current={index === currentImageIndex + 1}
+                className={`border-2 rounded-md p-1 transition w-[80px] h-[80px] ${
+                  index === currentImageIndex + 1
+                    ? "border-[#A88D65]"
+                    : "border-gray-200"
+                }`}
+                onClick={() =>
+                  setCurrentImageIndex(index === 0 ? -1 : index - 1)
+                }
+              >
+                <img
+                  alt={img.id}
+                  className="rounded w-full h-full object-cover"
+                  src={`http://127.0.0.1:8000${img.image}`}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Main image and secondary images */}
+          <div className="flex flex-col lg:w-3/4">
+            {/* Main image */}
+            <div className="relative bg-gray-50 rounded-md overflow-hidden mb-4">
+              <img
+                alt={product.name}
+                className="w-full"
+                height="480"
+                src={`http://127.0.0.1:8000${currentImageSrc}`}
+                width="480"
+              />
+              <button
+                aria-label="Previous image"
+                className="absolute top-1/2 left-3 -translate-y-1/2 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100"
+                onClick={handlePreviousImage}
+              >
+                <i className="fas fa-arrow-left"></i>
+              </button>
+              <button
+                aria-label="Next image"
+                className="absolute top-1/2 right-3 -translate-y-1/2 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100"
+                onClick={handleNextImage}
+              >
+                <i className="fas fa-arrow-right"></i>
+              </button>
+            </div>
+
+            {/* New horizontal div for thumbnails on small screens */}
+            <div className="flex flex-row space-x-2 lg:hidden">
               {[
                 { id: `product-${product.id}`, image: product.image },
                 ...images,
@@ -188,34 +322,29 @@ const ProductDetails = () => {
                 </button>
               ))}
             </div>
+
+            {/* Secondary images (always horizontal if present) */}
+            {product.secondaryImages && (
+              <div className="flex flex-row space-x-4 overflow-x-auto mt-4">
+                {product.secondaryImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className="relative bg-gray-50 rounded-md overflow-hidden flex-shrink-0"
+                  >
+                    <img
+                      alt={`${product.name} secondary ${index + 1}`}
+                      className="w-[120px] h-[120px] object-cover"
+                      height="120"
+                      src={`http://127.0.0.1:8000${image}`}
+                      width="120"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col space-y-4 lg:w-3/4">
-            <div className="relative bg-gray-50 rounded-md overflow-hidden">
-              <img
-                alt={product.name}
-                className="w-full"
-                height="480"
-                src={`http://127.0.0.1:8000${currentImageSrc}`}
-                width="480"
-              />
-              <button
-                aria-label="Previous image"
-                className="absolute top-1/2 left-3 -translate-y-1/2 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100"
-                onClick={handlePreviousImage}
-              >
-                <i className="fas fa-arrow-left"></i>
-              </button>
-              <button
-                aria-label="Next image"
-                className="absolute top-1/2 right-3 -translate-y-1/2 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100"
-                onClick={handleNextImage}
-              >
-                <i className="fas fa-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-
+          {/* Product details */}
           <div className="mt-10 lg:mt-0 lg:w-1/2">
             <div className="flex flex-col">
               <div className="flex items-center justify-between">
@@ -229,7 +358,6 @@ const ProductDetails = () => {
                       className={i < avgRating ? "fas fa-star" : "far fa-star"}
                     ></i>
                   ))}
-
                   <span className="text-gray-400 text-xs">
                     ({ratings.length})
                   </span>
@@ -246,12 +374,10 @@ const ProductDetails = () => {
                   Rate this product
                 </button>
               </span>
-
               <div>
                 <h5 className="h5 font-semibold">Description</h5>
                 <p>{product.description}</p>
               </div>
-
               <div>
                 <div className="row my-2">
                   <div className="col text-xs font-semibold text-gray-600">
@@ -277,27 +403,28 @@ const ProductDetails = () => {
                   onClick={handleAddToCart}
                   aria-label="Add to cart"
                   id="add-to-cart"
-                  className={`btn btn-warning ${isLoading ? "disabled" :"" } flex items-center justify-center space-x-2  text-white  px-5 py-1 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#fbcb2b]   relative group`}
+                  className={`btn btn-warning ${
+                    isLoading ? "disabled" : ""
+                  } flex items-center justify-center space-x-2 text-white px-5 py-1 w-full transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(212,160,23,0.6)] hover:bg-[#fbcb2b] relative group`}
                 >
                   <i className="fas fa-shopping-cart text-2xl drop-shadow-md"></i>
                   <span className="text-md">Add to Cart</span>
-
-                  <span className="arrow absolute right-4   group-hover:opacity-100 transition-opacity duration-200 text-xxl">
-                    <i class="fas fa-solid fa-arrow-right"></i>
+                  <span className="arrow absolute right-4 group-hover:opacity-100 transition-opacity duration-200 text-xxl">
+                    <i className="fas fa-solid fa-arrow-right"></i>
                   </span>
-
                   {isLoading && (
                     <i className="fas fa-spinner fa-spin absolute right-4 text-xl"></i>
                   )}
-                   {isSuccess === true && !isLoading && (
-                   <i className="fas fa-check absolute right-4 text-xl text-green-500"></i>
+                  {isSuccess === true && !isLoading && (
+                    <i className="fas fa-check absolute right-4 text-xl text-green-500"></i>
                   )}
                   {isSuccess === false && !isLoading && (
-                    <i class="fas fa-solid fa-triangle-exclamation absolute right-4  text-red-500"></i>
-                    
+                    <i className="fas fa-solid fa-triangle-exclamation absolute right-4 text-red-500"></i>
                   )}
                 </button>
-                <i className="far fa-heart ml-2 text-xl transition-colors duration-200 hover:text-red-500"></i>
+                <button onClick={() => addToWishlist(id_user, product.id)}>
+                  <i className="far fa-heart ml-2 text-xl transition-colors duration-200 hover:text-red-500"></i>
+                </button>
               </div>
               <div>
                 <h3 className="text-sm font-semibold mt-3 mb-1">Delivery</h3>

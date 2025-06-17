@@ -3,13 +3,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./Login.css";
 import RegisterForm from "./RegisterForm";
 import LoginForm from "./LoginForm";
+import Swal from 'sweetalert2';
+
+
+
 
 const Login = () => {
+ if (localStorage.getItem("user_id")) {
+    window.location.href = "/account";
+  }
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const redirectTo = queryParams.get("redirect") || "/";
-
+  const redirectTo = queryParams.get("redirect") || "/shop";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,7 +39,7 @@ const Login = () => {
     setErrorLog("");
     setErrorEmail("");
     setErrorPassword("");
-  
+
     if (!email || !password) {
       if (!email) setErrorEmail("Email is required.");
       if (!password) setErrorPassword("Password is required.");
@@ -43,7 +49,7 @@ const Login = () => {
       setErrorEmail("Please enter a valid email address.");
       return;
     }
-  
+
     try {
       setErrorPassword("");
       setErrorEmail("");
@@ -53,12 +59,27 @@ const Login = () => {
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
+       
         localStorage.setItem("user_id", data.user.id);
-        alert("Login successful!");
+      Swal.fire({
+            icon: 'success',
+            title: 'Login Successful!',
+            text: 'Welcome back!',
+            confirmButtonText: 'Ok',
+            width: '350px',  // Smaller size
+            heightAuto: true,
+            padding: '1rem', 
+            background: '#f8f9fa',  // Light gray background
+            confirmButtonColor: '#4CAF50',  // Light green button
+        });
+
+
+
+        
         navigate(redirectTo);
       } else {
         setErrorLog(data.error || "Login failed");
@@ -71,41 +92,41 @@ const Login = () => {
   const validateInputs = () => {
     let hasErrors = false;
 
-    setErrorName('');
-    setErrorEmailSignup('');
-    setErrorPasswordSignup('');
-    setErrorConfirmPassword('');
-    setErrorRegister('');
+    setErrorName("");
+    setErrorEmailSignup("");
+    setErrorPasswordSignup("");
+    setErrorConfirmPassword("");
+    setErrorRegister("");
 
     if (!name) {
-      setErrorName('Name is required.');
+      setErrorName("Name is required.");
       hasErrors = true;
     } else if (name.length < 2) {
-      setErrorName('Name must be at least 2 characters long.');
+      setErrorName("Name must be at least 2 characters long.");
       hasErrors = true;
     }
 
     if (!emailRegister) {
-      setErrorEmailSignup('Email is required.');
+      setErrorEmailSignup("Email is required.");
       hasErrors = true;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRegister)) {
-      setErrorEmailSignup('Please enter a valid email address.');
+      setErrorEmailSignup("Please enter a valid email address.");
       hasErrors = true;
     }
 
     if (!passwordSignup) {
-      setErrorPasswordSignup('Password is required.');
+      setErrorPasswordSignup("Password is required.");
       hasErrors = true;
     } else if (passwordSignup.length < 8 || !/[a-zA-Z]/.test(passwordSignup) || !/\d/.test(passwordSignup)) {
-      setErrorPasswordSignup('Password must be at least 8 characters long and contain letters and numbers.');
+      setErrorPasswordSignup("Password must be at least 8 characters long and contain letters and numbers.");
       hasErrors = true;
     }
 
     if (!confirmPassword) {
-      setErrorConfirmPassword('Please confirm your password.');
+      setErrorConfirmPassword("Please confirm your password.");
       hasErrors = true;
     } else if (confirmPassword !== passwordSignup) {
-      setErrorConfirmPassword('Passwords do not match.');
+      setErrorConfirmPassword("Passwords do not match.");
       hasErrors = true;
     }
 
@@ -121,12 +142,21 @@ const Login = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ emailRegister: emailRegister, passwordSignup: passwordSignup, name }),
         });
-  
+
         const data = await response.json();
-  
+
         if (response.ok) {
-          alert("Register successful!");
-          setAction("login")
+           Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: 'Welcome aboard!',
+        width: '350px',
+        padding: '1rem',
+        background: '#f8f9fa',  // Light background
+        confirmButtonColor: '#4CAF50'  // Soft green button
+    });
+
+          setAction("login");
         } else {
           setErrorRegister(data.error || "Register failed");
         }
@@ -134,24 +164,24 @@ const Login = () => {
         setErrorRegister("Network error. Please try again.");
       }
     } else {
-      setErrorRegister('Please fix the errors above to sign up.');
+      setErrorRegister("Please fix the errors above to sign up.");
     }
   };
 
   return (
     <div className="bg-white">
-      <div className="min-h-screen flex flex-col md:flex-row">
-        <div className="md:w-1/2 w-full">
+      <div className="min-h-screen flex flex-col md:flex-row items-stretch" style={{ minHeight: "100vh" }}>
+         <div className="md:w-1/2   flex-shrink-0">
           <img
             alt="Beige background with large text MUGS' ATELIER and a brown ceramic coffee cup on a wooden coaster with steam rising"
-            className="object-cover w-full h-full"
-            height="1000"
+            className=" w-full "
+            style={{ objectFit: "cover", height: "892px" }}
             src="./bg.jpg"
             width="800"
           />
         </div>
-        <div className="md:w-1/2 w-full flex items-center justify-center mt-2">
-          <div className="w-full max-w-lg">
+        <div className="md:w-1/2 w-full flex items-center justify-center ">
+          <div className="w-full max-w-lg flex flex-col">
             <div className="flex flex-col items-center mb-4">
               <div className="bg-[#E6D9C8] rounded-full p-4 mb-2">
                 <i className="fas fa-coffee text-[#6B3E1A] text-xl"></i>
@@ -163,43 +193,42 @@ const Login = () => {
                 Handcrafted, personalized mugs that tell your story
               </p>
             </div>
-            <div className="border border-[#E6D9C8] rounded-lg p-6 space-y-6 text-[#6B3E1A] min-h-[580px]">
+            <div className="border border-[#E6D9C8] rounded-lg p-6 space-y-6 text-[#6B3E1A] flex-grow">
               <div>
                 <h2 className="font-semibold text-lg mb-1 text-center">
-                  {action === 'login' ? 'Welcome Back' : 'Create Account'}
+                  {action === "login" ? "Welcome Back" : "Create Account"}
                 </h2>
                 <p className="text-center text-sm mb-4">
-                  {action === 'login'
-                    ? 'Sign in to your account to continue'
-                    : 'Join us to discover handcrafted mugs for every occasion'}
+                  {action === "login"
+                    ? "Sign in to your account to continue"
+                    : "Join us to discover handcrafted mugs for every occasion"}
                 </p>
               </div>
               <div className="flex rounded-md overflow-hidden border border-[#C49A6C] mb-4">
                 <button
                   className={`flex-1 ${
-                    action === 'login'
-                      ? 'bg-[#A67C52] text-white'
-                      : 'bg-[#E6E4E1] text-[#6B3E1A]'
+                    action === "login"
+                      ? "bg-[#A67C52] text-white"
+                      : "bg-[#E6E4E1] text-[#6B3E1A]"
                   } py-2 text-center text-sm font-normal`}
                   type="button"
-                  onClick={() => setAction('login')}
+                  onClick={() => setAction("login")}
                 >
                   Sign In
                 </button>
                 <button
                   className={`flex-1 ${
-                    action === 'login'
-                      ? 'bg-[#E6E4E1] text-[#6B3E1A]'
-                      : 'bg-[#A67C52] text-white'
+                    action === "login"
+                      ? "bg-[#E6E4E1] text-[#6B3E1A]"
+                      : "bg-[#A67C52] text-white"
                   } py-2 text-center text-sm font-normal`}
                   type="button"
-                  onClick={() => setAction('register')}
+                  onClick={() => setAction("register")}
                 >
                   Register
                 </button>
-                
               </div>
-              {action === 'login' ? (
+              {action === "login" ? (
                 <LoginForm
                   email={email}
                   setEmail={setEmail}
@@ -211,7 +240,6 @@ const Login = () => {
                   handleLogin={handleLogin}
                   action={action}
                   setAction={setAction}
-
                 />
               ) : (
                 <RegisterForm
@@ -229,7 +257,7 @@ const Login = () => {
                   errorPasswordSignup={errorPasswordSignup}
                   errorConfirmPassword={errorConfirmPassword}
                   handleRegister={handleRegister}
-                   action={action}
+                  action={action}
                   setAction={setAction}
                 />
               )}
